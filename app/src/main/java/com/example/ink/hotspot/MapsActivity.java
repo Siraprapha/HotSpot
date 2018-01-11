@@ -98,15 +98,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Bundle bundle = getIntent().getExtras();
         if(bundle!=null){
             value = bundle.getString("casenoti");
-            switch (value){
-                case "fireupdate":{
-                    Log.e("push noti test", "fire update" );
-                    break;
+            if(value != null){
+                switch (value){
+                    case "fireupdate":{
+                        Log.e("push noti test", "fire update" );
+                        break;
+                    }
+                    case "userrequest":{
+                        break;
+                    }
+                    default:break;
                 }
-                case "userrequest":{
-                    break;
-                }
-                default:break;
             }
         }
 
@@ -310,7 +312,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void CallJson(GoogleMap googleMap,String url){
         mMap = googleMap;
         //mMap.clear();
-        if (url!=""){
+        if (!url.equals("")){
             JsonObjectRequest jsObjRequest = new JsonObjectRequest
                     (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
                         @Override
@@ -352,7 +354,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         else{
             Log.e("Json", "URL not found.");
-            Toast.makeText(this,"URL Not found.",Toast.LENGTH_SHORT);
+            Toast.makeText(this,"URL Not found.",Toast.LENGTH_SHORT).show();
         }
 
 
@@ -387,7 +389,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             e.printStackTrace();
                         }
                         Log.e("Json", "Finish mark json");
-                        Toast.makeText(getApplicationContext(),"Finish mark json",Toast.LENGTH_SHORT);
+                        Toast.makeText(getApplicationContext(),"Finish mark json",Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -456,24 +458,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     //Notification
-    /*
-    public void showNotification(View view) {
-        // your code goes here.
-        String groupId = "timeline_group";
-        String groupName = "Timeline";
-        NotificationChannelGroup group = new NotificationChannelGroup(groupId, groupName);
-
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        String channelId = "fire_alarm";
-        String channelName = "พบไฟป่าแห่งใหม่";
-        NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
-        channel.setGroup(groupId);
-
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.createNotificationChannelGroup(group);
-        manager.createNotificationChannel(channel);
-    }
-*/
 
     public void showNotification(View view) {
         NotificationManager mNotificationManager =
