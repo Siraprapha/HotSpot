@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "406021808556",
+    "firebase_url": "https://my-project-1503401028619.firebaseio.com",
+    "project_id": "my-project-1503401028619",
+    "storage_bucket": "my-project-1503401028619.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:406021808556:android:db3c8a71772bfb42",
+        "android_client_info": {
+          "package_name": "com.example.ink.hotspot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "406021808556-q9tnphuigna95ooi2b83b778ojhor2dg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdLpK6sEXpJkDrqsnJKZ8b3UsNP3a4D_g"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

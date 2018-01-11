@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#771e10</item>
+        <item name="colorPrimaryDark">#470000</item>
+        <item name="colorAccent">#ac4c37</item>
+
+        <!-- Customize your theme here. -->
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+    <style name="AppTheme2" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#ebc137</item>
+        <item name="colorPrimaryDark">#b59100</item>
+        <item name="colorAccent">#fff36a</item>
+
+        <!-- Customize your theme here. -->
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+</resources>

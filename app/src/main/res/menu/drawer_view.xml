@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<group android:checkableBehavior="all">
+    <item
+        android:id="@+id/home"
+        android:title="หน้าแรก"
+        android:icon="@mipmap/ic_home_black_24dp" />
+
+    <item android:title="ดัชนีการลุกลามของไฟ">
+        <menu>
+            <group >
+                <item
+                    android:id="@+id/ffmc"
+                    android:title="FFMC" />
+                <item
+                    android:id="@+id/fwi"
+                    android:title="FWI"/>
+            </group>
+        </menu>
+    </item>
+
+    <item android:title="ศูนย์ควบคุมไฟป่า">
+        <menu>
+            <group >
+                <item
+                    android:id="@+id/st_forest"
+                    android:title="ศูนย์/หน่วยส่งเสริมการควบคุมไฟป่า"/>
+                <item
+                    android:id="@+id/st_wilds"
+                    android:title="สถานีควบคุมไฟป่า"/>
+            </group>
+        </menu>
+    </item>
+    <item android:title="">
+        <menu>
+            <group >
+                <item
+                    android:id="@+id/call"
+                    android:title="@string/emergency" />
+                <item
+                    android:id="@+id/about"
+                    android:title="About us" />
+            </group>
+        </menu>
+    </item>
+</group>
+</menu>
