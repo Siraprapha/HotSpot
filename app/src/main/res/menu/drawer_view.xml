@@ -4,10 +4,10 @@
 <group android:checkableBehavior="all">
     <item
         android:id="@+id/home"
-        android:title="หน้าแรก"
+        android:title="@string/home"
         android:icon="@mipmap/ic_home_black_24dp" />
 
-    <item android:title="ดัชนีการลุกลามของไฟ">
+    <item android:title="@string/kmz">
         <menu>
             <group >
                 <item
@@ -20,29 +20,31 @@
         </menu>
     </item>
 
-    <item android:title="ศูนย์ควบคุมไฟป่า">
+    <item android:title="@string/station">
         <menu>
             <group >
                 <item
                     android:id="@+id/st_forest"
-                    android:title="ศูนย์/หน่วยส่งเสริมการควบคุมไฟป่า"/>
+                    android:title="@string/st_forest"/>
                 <item
                     android:id="@+id/st_wilds"
-                    android:title="สถานีควบคุมไฟป่า"/>
+                    android:title="@string/st_wilds"/>
             </group>
         </menu>
     </item>
+</group>
     <item android:title="">
         <menu>
             <group >
                 <item
                     android:id="@+id/call"
-                    android:title="@string/emergency" />
+                    android:title="@string/emergency"
+                    android:enabled="false"/>
                 <item
                     android:id="@+id/about"
-                    android:title="About us" />
+                    android:title="@string/about" />
             </group>
         </menu>
     </item>
-</group>
+
 </menu>

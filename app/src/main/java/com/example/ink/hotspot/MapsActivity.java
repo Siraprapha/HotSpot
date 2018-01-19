@@ -1,15 +1,11 @@
 package com.example.ink.hotspot;
 
-import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,61 +15,45 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.data.kml.KmlLayer;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.IOException;
-import java.util.Objects;
-
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,View.OnClickListener{
+public class MapsActivity extends AppCompatActivity implements Login.LoginListener, View.OnClickListener{
 
     public DrawerLayout mDrawer;
     public Toolbar toolbar;
     public NavigationView nvDrawer;
     ActionBarDrawerToggle drawerToggle;
+    public LinearLayout nvheader;
+    View header_view;
+    TextView nav_header_name;
+    TextView nav_header_circle;
+    private SwitchCompat switcher;
+
+    public MapsFragment mapsFragment;
 
     private GoogleMap mMap;
 
-    private KmlLayer layer;
+    private String[] user_data;
+    private boolean is_login = false;
 
-    private final Handler handler = new Handler();
+    UserPref userpref;
 
     private static final String TAG = "MapsActivity";
-
-    //Current Location
-    CurrentLocation currLocate ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,15 +61,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_maps);
 
-        //Map
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            currLocate.checkLocationPermission();
-        }
-
         setDrawer();
 
         if(savedInstanceState == null){
-            CreateMap();
+            //CreateMap();
+            try {
+                NewFragment(MapsFragment.class);
+            } catch (IllegalAccessException | InstantiationException e) {
+                e.printStackTrace();
+            }
         }
         else {
 
@@ -127,6 +107,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         nvDrawer = findViewById(R.id.nvView);
         // Inflate the header view at runtime
         //View headerLayout = nvDrawer.inflateHeaderView(R.layout.nav_header);
+        header_view = nvDrawer.getHeaderView(0);
+        header_view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Class user_acc = Login.class;
+                try {
+                    NewFragment(user_acc);
+                    Toast.makeText(getApplication() ,"Login Fragment",Toast.LENGTH_SHORT);
+                    mDrawer.closeDrawers();
+                } catch (IllegalAccessException | InstantiationException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        nav_header_circle = header_view.findViewById(R.id.nav_header_circle);
+        nav_header_name = header_view.findViewById(R.id.nav_header_name);
+
         // Setup drawer view
         setupDrawerContent(nvDrawer);
     }
@@ -164,29 +161,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static final String EXTRA_MESSAGE = "Inkie1234";
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        Fragment fragment = null;
         Class fragmentClass = null;
         switch (menuItem.getItemId()) {
             case R.id.home:
+                //CreateMap();
                 fragmentClass = MapsFragment.class;
                 mDrawer.openDrawer(GravityCompat.START);
 
                 break;
             case R.id.ffmc:
-                //retrieveFileFromUrl();
-                showKML(mMap,0);
-                //fragmentClass = CallNoti.class;
+                mapsFragment.showKML(mMap,0);
                 break;
             case R.id.fwi:
-                showKML(mMap,1);
+                mapsFragment.showKML(mMap,1);
                 break;
             case R.id.st_forest:
                 //
-                caseJson(1);
+                mapsFragment.caseJson(0);
                 break;
             case R.id.st_wilds:
                 //
-                caseJson(2);
+                mapsFragment.caseJson(1);
                 break;
             case R.id.call:
                 fragmentClass = CallFromUser.class;
@@ -203,9 +198,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if(fragmentClass!= null){
             try {
                 NewFragment(fragmentClass);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
+            } catch (IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
             }
         }
@@ -231,58 +224,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return super.onOptionsItemSelected(item);
     }
 
-    public void onClick(View v){
-        //TextView tv = (TextView)findViewById(R.id.txt_view);
-        //delete all fragment except first one
-
-        /*switch (v.getId()) {
-            case R.id.subscribeButton://sub
-                FirebaseMessaging.getInstance().subscribeToTopic("droiddev/news");
-                Log.d(TAG, "SubscribeToTopic");
-                Toast.makeText(MapsActivity.this, "SubscribeToTopic", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.unsubscribeButton://unsub
-                FirebaseMessaging.getInstance().unsubscribeFromTopic("droiddev/news");
-                Log.d(TAG, "UnsubscribeFromTopic");
-                Toast.makeText(MapsActivity.this, "UnsubscribeFromTopic", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.logTokenButton://show token
-                String token = FirebaseInstanceId.getInstance().getToken();
-                Log.d(TAG, "Token : " + token);
-                Toast.makeText(MapsActivity.this, "Token : " + token, Toast.LENGTH_SHORT).show();
-                break;
-        }*/
-    }
-
     //Start Map
-    public void CreateMap() {
-        SupportMapFragment mapFragment = SupportMapFragment.newInstance();
+   /* public void CreateMap() {
+        mapsFragment = new MapsFragment();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.map, mapFragment);
+        fragmentTransaction.replace(R.id.map, mapsFragment);
         fragmentTransaction.commit();
-        mapFragment.getMapAsync(this);
-    }
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        //Initialize Google Play Services
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Log.e("Inky","ACCESS_FINE_LOCATION");
-                currLocate = new CurrentLocation(mMap);
-                mMap.setMyLocationEnabled(true);
-            }
-        }
-        else {
-            //ShowDialog();
-            Log.e("Inky","NO ACCESS_FINE_LOCATION");
-            caseJson(0);
-            currLocate = new CurrentLocation(mMap);
-            mMap.setMyLocationEnabled(true);
-            //handler.postDelayed(runnable, 10000);
-        }
-    }
+    }*/
 
     public final Runnable runnable = new Runnable() {
 
@@ -292,150 +240,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             //handler.postDelayed(runnable,10000);
         }
     };
-
-    //Marker From JSON
-    public void caseJson(int key){
-        String url;
-        switch (key){
-            case 0: url = "http://tatam.esy.es/api.php?key=map";CallJsonHotSpot(mMap,url);break;    //fire hot spot
-            case 1: url = "http://tatam.esy.es/api.php?key=station&sub=forest";CallJson(mMap,url);break;    //forest station
-            case 2: {
-                url = "http://tatam.esy.es/api.php?key=station&sub=wild";
-                //url = "http://tatam.esy.es/getair4thai.php";
-                CallJson(mMap,url);
-                break;    //wild station
-            }
-            default: url = "";
-        }
-
-    }
-    public void CallJson(GoogleMap googleMap,String url){
-        mMap = googleMap;
-        //mMap.clear();
-        if (!url.equals("")){
-            JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                    (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            Log.d("test",response.toString());
-
-                            try {
-                                JSONArray arr = response.getJSONArray("posts");
-                                double lat;
-                                double lng;
-                                for(int i=0;i<arr.length();i++){
-                                    JSONObject o = arr.getJSONObject(i);
-                                    JSONObject datares = o.getJSONObject(Integer.toString(i+1));
-                                    lat =  Double.parseDouble((String)datares.get("latitude"));
-                                    lng =  Double.parseDouble((String)datares.get("longitude"));
-//                                    lat =  (double)datares.get("latitude");
-//                                    lng =  (double)datares.get("longitude");
-                                    mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng))
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.placeholder)));
-                                    //String name = datares.get("name").toString();
-                                }
-                                //move camera to the last lat,lng marker
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            Log.e("Json", "Finish mark json");
-                        }
-                    }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            // TODO Auto-generated method stub
-                            Log.e("Json", "Error on"+error);
-                        }
-                    });
-
-// Access the RequestQueue through your singleton class.
-            MySingleton.getInstance(MapsActivity.this).addToRequestQueue(jsObjRequest);
-        }
-        else{
-            Log.e("Json", "URL not found.");
-            Toast.makeText(this,"URL Not found.",Toast.LENGTH_SHORT).show();
-        }
-
-
-    }
-    public void CallJsonHotSpot(GoogleMap googleMap,String url){
-        mMap = googleMap;
-        //mMap.clear();
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("test",response.toString());
-
-                        try {
-                            JSONArray arr = response.getJSONArray("posts");
-                            double lat;
-                            double lng;
-                            for(int i=0;i<arr.length();i++){
-                                JSONObject o = arr.getJSONObject(i);
-                                JSONObject datares = o.getJSONObject(Integer.toString(i+1));
-                                lat =  Double.parseDouble((String)datares.get("latitude"));
-                                lng =  Double.parseDouble((String)datares.get("longitude"));
-//                                    lat =  (double)datares.get("latitude");
-//                                    lng =  (double)datares.get("longitude");
-                                mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng))
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame)));
-                                //String name = datares.get("name").toString();
-                            }
-                            //move camera to the last lat,lng marker
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        Log.e("Json", "Finish mark json");
-                        Toast.makeText(getApplicationContext(),"Finish mark json",Toast.LENGTH_SHORT).show();
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        Log.e("Json", "Error on"+error);
-                    }
-                });
-
-// Access the RequestQueue through your singleton class.
-        MySingleton.getInstance(MapsActivity.this).addToRequestQueue(jsObjRequest);
-
-    }
-
-    //KML
-    private void showKML(GoogleMap googleMap,int key){
-        mMap = googleMap;
-        //mMap.clear();
-        if(layer != null){
-            layer.removeLayerFromMap();
-        }
-        try {
-            Log.e("KML", "showKML: ");
-            Toast.makeText(this,"start show KML",Toast.LENGTH_SHORT).show();
-            if(key==0){
-                //FFMC
-                //KmlLayer layer = new KmlLayer(mMap, kmlInputStream, getApplicationContext());
-                layer = new KmlLayer(mMap, R.raw.ffmc, getApplicationContext());
-                layer.addLayerToMap();
-            }
-            else{
-                //FWI
-                layer = new KmlLayer(mMap, R.raw.fwi, getApplicationContext());
-                layer.addLayerToMap();
-            }
-            Log.e("KML", "showKML: already");
-            Toast.makeText(this,"finish show KML",Toast.LENGTH_SHORT).show();
-
-            //movecamera
-
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     //Dialog
     private void ShowDialog(){
@@ -457,34 +261,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         builder.show();
     }
 
-    //Notification
-
-    public void showNotification(View view) {
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        String CHANNEL_ID = "my_channel_01";
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this,CHANNEL_ID)
-                        .setSmallIcon(R.drawable.image)
-                        .setContentTitle("Fire Alarm")
-                        .setContentText("พบพิกัดไฟป่าเพิ่ม");
-
-        // Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(this, MapsActivity.class);
-
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MapsActivity.class);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
-
-        mNotificationManager.notify(001, mBuilder.build());
+    @Override
+    public void onLoginSuccess(boolean x){
+        String name;
+        if(x){
+            userpref = new UserPref(this);
+            name = userpref.getFacebookUserInfo("fb_first_name");
+            nav_header_name.setText(name);
+            nav_header_circle.setText(name.substring(0,1));
+        }else{
+            name = "ลงชื่อเข้าใช้";
+            nav_header_name.setText(name);
+            nav_header_circle.setText("A");
+        }
+    }
+    @Override
+    public void updateUserPhoto(){
 
     }
 
 
+    @Override
+    public void onClick(View view) {
+
+    }
 }

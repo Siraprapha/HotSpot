@@ -30,13 +30,11 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
                                                                     GoogleApiClient.OnConnectionFailedListener,
                                                                     LocationListener {
 
-    GoogleApiClient mGoogleApiClient;
-    GoogleMap mMap;
-    Location mLastLocation;
-    Marker mCurrLocationMarker;
-    LocationRequest mLocationRequest;
-    public double lat;
-    public double lng;
+    private GoogleApiClient mGoogleApiClient;
+    private GoogleMap mMap;
+    private Marker mCurrLocationMarker;
+    private double lat;
+    private double lng;
 
     public CurrentLocation(GoogleMap mMap){
         this.mMap = mMap;
@@ -111,7 +109,6 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
                     // Permission denied, Disable the functionality that depends on this permission.
                     Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
                 }
-                return;
             }
 
             // other 'case' lines to check for other permissions this app might request.
@@ -122,7 +119,7 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
     @Override
     public void onConnected(Bundle bundle) {
 
-        mLocationRequest = new LocationRequest();
+        LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
@@ -145,7 +142,7 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
     @Override
     public void onLocationChanged(Location location) {
 
-        mLastLocation = location;
+        Location mLastLocation = location;
         if (mCurrLocationMarker != null) {
             mCurrLocationMarker.remove();
         }
@@ -180,6 +177,9 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
     }
     public LatLng getCurrLatLng(){
         return new LatLng(getLat(),getLng());
+    }
+    public void movecamera(){
+
     }
 
 }

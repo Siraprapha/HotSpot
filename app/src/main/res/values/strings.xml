@@ -16,4 +16,16 @@
     <string name="subscribe_to_news">subscribe to news</string>
     <string name="unsubscribe_to_news">unsubscribe to news</string>
     <string name="log_token">log token</string>
+
+    <string name="facebook_app_id">293960094461394</string>
+    <string name="fb_login_protocol_scheme">fb293960094461394</string>
+
+    <string name="login_logout">บัญชี</string>
+    <string name="about">เกี่ยวกับเรา</string>
+    <string name="st_wilds">สถานีควบคุมไฟป่า</string>
+    <string name="st_forest">ศูนย์/หน่วยส่งเสริมการควบคุมไฟป่า</string>
+    <string name="station">ศูนย์ควบคุมไฟป่า</string>
+    <string name="kmz">ดัชนีการลุกลามของไฟ</string>
+    <string name="home">หน้าแรก</string>
+
 </resources>
