@@ -2,6 +2,7 @@ package com.example.ink.hotspot;
 
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -48,7 +49,8 @@ import java.util.ArrayList;
  */
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
-    MapView mMapView;
+    private Activity activity;
+
     public GoogleMap mMap;
 
     private CurrentLocation currLocate;
@@ -63,41 +65,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_map, container, false);
-        mMapView = (MapView) rootView.findViewById(R.id.fragment_map_container);
-        mMapView.onCreate(savedInstanceState);
-        mMapView.getMapAsync(this);
-        return rootView;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mMapView.onPause();
-    }
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mMapView.onDestroy();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState){
-        super.onSaveInstanceState(outState); mMapView.onSaveInstanceState(outState);
-    }
-    @Override
-    public void onLowMemory(){
-        super.onLowMemory();
-        mMapView.onLowMemory();
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        mMapView.onResume();
-    }
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+        // Inflate the layout for this fragment
+        View rootview = inflater.inflate(R.layout.fragment_map, container, false);
+        SupportMapFragment mapFragment = SupportMapFragment.newInstance();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_map_container, mapFragment);
+        fragmentTransaction.commit();
+        mapFragment.getMapAsync(this);
+        return rootview;
     }
 
     @Override
@@ -105,11 +80,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap = googleMap;
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(getContext(),android.Manifest.permission.ACCESS_FINE_LOCATION)
+            if (ContextCompat.checkSelfPermission(getActivity(),android.Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
 
                 Log.e("Inky","ACCESS_FINE_LOCATION");
-                currLocate = new CurrentLocation(mMap);
+                currLocate = new CurrentLocation(mMap,getActivity());
                 mMap.setMyLocationEnabled(true);
             }
         }
@@ -117,7 +92,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             //ShowDialog();
             Log.e("Inky","NO ACCESS_FINE_LOCATION fragment");
             mMap.setMyLocationEnabled(true);
-            currLocate = new CurrentLocation(mMap);
+            currLocate = new CurrentLocation(mMap,getActivity());
             String url = "http://tatam.esy.es/api.php?key=map";
             CallJsonHotSpot(mMap, url);
             //handler.postDelayed(runnable, 10000);
@@ -234,7 +209,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             e.printStackTrace();
                         }
                         Log.e("Json", "Finish mark json");
-                        Toast.makeText(getContext(),"Finish mark json",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(),"Finish mark json",Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -259,7 +234,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
         try {
             Log.e("KML", "showKML: ");
-            Toast.makeText(getContext(),"start show KML",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(),"start show KML",Toast.LENGTH_SHORT).show();
             //if(getContext()!=null) {Log.e("Context", "showKML: Context is notnull"+getContext());}
             if(key==0){
                 //FFMC
@@ -275,13 +250,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             //Toast.makeText(getContext(),"ไม่พบข้อมูล"+layer.getContainers().toString(),Toast.LENGTH_SHORT).show();
             if(layer==null)Log.e("Context", "showKML: Context is notnull"+getContext());
             Log.e("KML", "showKML: already");
-            Toast.makeText(getContext(),"finish show KML",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(),"finish show KML",Toast.LENGTH_SHORT).show();
 
             //movecamera
 
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
         }
     }

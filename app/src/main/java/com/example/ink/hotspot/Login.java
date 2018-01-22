@@ -231,6 +231,7 @@ public class Login extends Fragment {
     public void onDetach() {
         super.onDetach();
         accessTokenTracker.stopTracking();
+        userPref.sendToServer();
     }
 
     public interface LoginListener{

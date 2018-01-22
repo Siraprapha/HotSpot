@@ -1,6 +1,8 @@
 package com.example.ink.hotspot;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -26,23 +28,23 @@ import com.google.android.gms.maps.model.MarkerOptions;
  * Created by die_t on 12/17/2017.
  */
 
-public class CurrentLocation extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
                                                                     GoogleApiClient.OnConnectionFailedListener,
                                                                     LocationListener {
-
+    private Activity activity;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
     private Marker mCurrLocationMarker;
     private double lat;
     private double lng;
 
-    public CurrentLocation(GoogleMap mMap){
+    public CurrentLocation(GoogleMap mMap, Activity activity){
         this.mMap = mMap;
-
+        this.activity = activity;
     }
 
     protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(activity)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
@@ -53,12 +55,12 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
     public boolean checkLocationPermission(){
-        if (ContextCompat.checkSelfPermission(this,
+        if (ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             // Asking user if explanation is needed
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
 
                 // Show an explanation to the user *asynchronously* -- don't block
@@ -66,14 +68,14 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
                 // sees the explanation, try again to request the permission.
 
                 //Prompt the user once explanation has been shown
-                ActivityCompat.requestPermissions(this,
+                ActivityCompat.requestPermissions(activity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION);
 
 
             } else {
                 // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
+                ActivityCompat.requestPermissions(activity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION);
             }
@@ -83,7 +85,6 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
         }
     }
 
-    @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
@@ -91,26 +92,22 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
                     // permission was granted. Do the
                     // contacts-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(this,
+                    if (ContextCompat.checkSelfPermission(activity,
                             Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
-
                         if (mGoogleApiClient == null) {
                             buildGoogleApiClient();
                         }
                         mMap.setMyLocationEnabled(true);
                     }
-
                 } else {
 
                     // Permission denied, Disable the functionality that depends on this permission.
-                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity, "permission denied", Toast.LENGTH_LONG).show();
                 }
             }
-
             // other 'case' lines to check for other permissions this app might request.
             // You can add here other case statements according to your requirement.
         }
@@ -123,7 +120,7 @@ public class CurrentLocation extends AppCompatActivity implements GoogleApiClien
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        if (ContextCompat.checkSelfPermission(this,
+        if (ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);

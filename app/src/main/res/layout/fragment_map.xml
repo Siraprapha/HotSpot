@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MapsFragment">
 
-<com.google.android.gms.maps.MapView
+<FrameLayout
     android:id="@+id/fragment_map_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
