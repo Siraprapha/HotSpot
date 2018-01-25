@@ -41,6 +41,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     public LinearLayout nvheader;
     View header_view;
     TextView nav_header_name;
+    private static final String TAG = "MapsActivity";
     TextView nav_header_circle;
     private SwitchCompat switcher;
 
@@ -53,7 +54,6 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
 
     UserPref userpref;
 
-    private static final String TAG = "MapsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

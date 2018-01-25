@@ -1,11 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:facebook="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
-    android:id="@+id/fragment_login_container"
     tools:context="com.example.ink.hotspot.Login"
     android:theme="@style/AppTheme3"
     android:background="#ac4c37">
@@ -13,81 +12,75 @@
     <!-- TODO: Update blank fragment layout -->
 
     <LinearLayout
-        android:id="@+id/login_block"
+        android:id="@+id/register_block"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
         android:gravity="center"
-        android:layout_marginTop="100dp"
+        android:layout_centerInParent="true"
         android:background="#ac4c37">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="เข้าสู่ระบบ"
+            android:text="สมัครใช้งาน"
             android:textSize="24sp"
             android:textColor="#470000"
             android:layout_marginBottom="16dp"/>
 
         <EditText
-            android:id="@+id/fill_username"
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:hint="E-mail"/>
+
+        <EditText
+            android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:hint="Username"/>
 
         <EditText
-            android:id="@+id/fill_password"
+            android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:inputType="textPassword"
             android:hint="Password"/>
 
-        <Button
-            android:id="@+id/button_login"
+        <EditText
+            android:id="@+id/confirm_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#470000"
-            android:textColor="#ffffff"
-            android:text="ลงชื่อเข้าใช้"
-            android:textSize="18sp"
-            android:layout_marginTop="16dp"/>
-
-        <Button
-            android:id="@+id/button_register"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="สมัครสมาชิก"
-            android:textColor="#fff"
-            android:textSize="18sp"
-            android:background="#470000"/>
+            android:padding="16dp"
+            android:inputType="textPassword"
+            android:hint="Confirm password"/>
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/or"
+    <Button
+        android:id="@+id/cancel_register"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/login_block"
-        android:layout_marginTop="0dp"
-        android:layout_centerHorizontal="true"
-        android:text="หรือ"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/register_block"
+        android:text="ยกเลิก"
         android:textColor="#470000"
-        android:textSize="20sp" />
+        android:textSize="22sp"
+        android:background="#ac4c37"/>
 
-    <com.facebook.login.widget.LoginButton
-        android:id="@+id/login_button_fb"
+    <Button
+        android:id="@+id/confirm_register"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/or"
-        android:layout_marginTop="10dp"
-        android:layout_centerHorizontal="true"
-        android:textSize="20sp"
-        android:textAlignment="center"
-        facebook:com_facebook_confirm_logout="true" />
-
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/register_block"
+        android:text="ตกลง"
+        android:textColor="#470000"
+        android:textSize="22sp"
+        android:background="#ac4c37"/>
 
 </RelativeLayout>

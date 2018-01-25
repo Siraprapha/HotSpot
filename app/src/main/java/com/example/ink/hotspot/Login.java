@@ -7,11 +7,14 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,7 +48,11 @@ public class Login extends Fragment {
     private static final String TAG = "Login";
     private static final String SET_NAME_IF_NOT_LOGIN = "ลงชื่อเข้าใช้";
 
-    private TextView username;
+    private EditText fill_username;
+    private EditText fill_password;
+    private Button button_login;
+    private Button button_register;
+    LoginButton loginButton;
 
     CallbackManager callbackManager;
     AccessTokenTracker accessTokenTracker;
@@ -67,7 +74,6 @@ public class Login extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(getContext());
 
@@ -85,27 +91,58 @@ public class Login extends Fragment {
                 }else{
                     fetchUserInfo(oldAccessToken);
                 }
-
             }
         };
-
         callbackManager = CallbackManager.Factory.create();
-
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootview = inflater.inflate(R.layout.fragment_login, container, false);
 
-        username = rootview.findViewById(R.id.user_name);
+        //username = rootview.findViewById(R.id.user_name);
+        fill_username = rootview.findViewById(R.id.fill_username);
+        fill_password = rootview.findViewById(R.id.fill_password);
+        button_login = rootview.findViewById(R.id.button_login);
+        button_register = rootview.findViewById(R.id.button_register);
 
         userPref = new UserPref(getApplicationContext());
-
+        //onClicklogin
+        button_login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String username = fill_username.getText().toString().trim();
+                String password = fill_password.getText().toString().trim();
+                //validate
+            }
+        });
+        //onClickregister
+        button_register.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Fragment fragment = null;
+                try {
+                    fragment = Register.class.newInstance();
+                } catch (java.lang.InstantiationException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+                // Insert the fragment by replacing any existing fragment
+                FragmentManager fragmentManager = getFragmentManager();
+                fragmentManager.beginTransaction().replace(R.id.map, fragment).commit();
+            }
+        });
+        //onClickfacebook
         permissions = Arrays.asList("public_profile","email");
+        loginButton = rootview.findViewById(R.id.login_button_fb);
+        FacebookLoginButton();
+        return rootview;
+    }
+    private void FacebookLoginButton(){
 
-        LoginButton loginButton = rootview.findViewById(R.id.login_button_fb);
         loginButton.setReadPermissions(permissions);
         // If using in a fragment
         loginButton.setFragment(this);
@@ -149,8 +186,8 @@ public class Login extends Fragment {
                 LoginManager.getInstance().logInWithReadPermissions(getActivity(), permissions);
             }
         });
-        return rootview;
     }
+    //request json from facebook
     private void fetchUserInfo(AccessToken ac) {
         if (ac != null) {
             GraphRequest request = GraphRequest.newMeRequest(
@@ -168,6 +205,7 @@ public class Login extends Fragment {
             Toast.makeText(getActivity(),"accessToken is null",Toast.LENGTH_LONG).show();
         }
     }
+    //json to string
     private Bundle getFacebookData(JSONObject object) {
         Bundle bundle = new Bundle();
 
@@ -182,14 +220,14 @@ public class Login extends Fragment {
                 bundle.putString("email", object.getString("email"));
             userPref.saveFacebookUserInfo(object.getString("id"),object.getString("first_name"),
                                         object.getString("name"),object.getString("email"));
-            setUserName();
+            //setUserName();
         } catch (Exception e) {
             Log.d(TAG, "BUNDLE Exception : "+e.toString());
         }
 
         return bundle;
     }
-
+/*
     private void setUserName(){
         String name = userPref.getFacebookUserInfo("fb_first_name");
         if(name!=null){
@@ -201,18 +239,13 @@ public class Login extends Fragment {
             Log.e(TAG, "setUserName: "+userPref.getFacebookUserInfo("fb_first_name"));
         }
     }
-
+*/
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-    }
     @Override
     public void onResume() {
         super.onResume();
@@ -231,7 +264,7 @@ public class Login extends Fragment {
     public void onDetach() {
         super.onDetach();
         accessTokenTracker.stopTracking();
-        userPref.sendToServer();
+        //userPref.sendToServer();
     }
 
     public interface LoginListener{
