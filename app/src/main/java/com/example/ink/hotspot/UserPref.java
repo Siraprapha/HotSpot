@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -15,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +42,7 @@ public class UserPref {
     private final String LOGIN_NAME = "login_name";
     private final String LOGIN_EMAIL = "login_email";
     private final String LOGIN_PASSWORD = "login_password";
+    private final String RESPONSE_STATUS = "response_status";
     // fb_id fb_first_name fb_name fb_email currLocation
 
     // Constructor
@@ -155,6 +158,7 @@ public class UserPref {
         editor.apply(); // This line is IMPORTANT !!!
         Log.e(TAG, "Shared Name : "+prefs.getString(REGIS_NAME,null)+"\nEmail : "+
                 prefs.getString(REGIS_EMAIL,null)+"\nPassword : "+prefs.getString(REGIS_PASSWORD,null));
+        sendRegisterUserInfoToServer();
     }
     public void sendRegisterUserInfoToServer(){
         RequestQueue queue = Volley.newRequestQueue(context);  // this = context
@@ -205,14 +209,14 @@ public class UserPref {
     }
 
     //Login
-    private void saveLoginUserInfo(String username,String password){
+    public void saveLoginUserInfo(String username,String password){
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(REGIS_NAME, username);
-        editor.putString(REGIS_PASSWORD, password);
+        editor.putString(LOGIN_NAME, username);
+        editor.putString(LOGIN_PASSWORD, password);
         editor.apply(); // This line is IMPORTANT !!!
-        Log.e(TAG, "Shared Name : "+prefs.getString(REGIS_NAME,null)+"\nEmail : "+
-                prefs.getString(REGIS_EMAIL,null)+"\nPassword : "+prefs.getString(REGIS_PASSWORD,null));
+        Log.e(TAG, "Shared Username : "+prefs.getString(LOGIN_NAME,null)+"\nPassword : "+prefs.getString(LOGIN_PASSWORD,null));
+        sendLoginUserInfoToServer();
     }
     public void sendLoginUserInfoToServer(){
         RequestQueue queue = Volley.newRequestQueue(context);  // this = context
@@ -222,6 +226,7 @@ public class UserPref {
                 {
                     @Override
                     public void onResponse(String response) {
+                        Log.i(TAG,"onResponse"+ response);
                         JSONObject jsonObject= null;
                         try {
                             jsonObject = new JSONObject(response);
@@ -229,6 +234,8 @@ public class UserPref {
                             JSONObject o = arr.getJSONObject(0);
                             JSONObject datares = o.getJSONObject(Integer.toString(1));
                             String status = (String) datares.get("status");
+                            saveResponseStatus(status);
+                            Log.d(TAG, "onResponse: status"+status);
                             //Json(url,jsonObject);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -239,8 +246,9 @@ public class UserPref {
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        //clearUserInfo();
                         // error
-                        Log.d("Error.Response", error.getMessage());
+                        Log.e(TAG, error.getLocalizedMessage());
                     }
                 }
         ) {
@@ -248,24 +256,42 @@ public class UserPref {
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("post", "signup");
-                params.put("method", "add");
-                params.put("username", getFacebookUserInfo(LOGIN_NAME));
-                params.put("email", getFacebookUserInfo(LOGIN_EMAIL));
-                params.put("password", getFacebookUserInfo(LOGIN_PASSWORD));
-                params.put("token_device", getDeviceToken());
-                params.put("token_auth", "");
-                params.put("role", "0");
+                params.put("post", "signin");
+                params.put("method", "request");
+                params.put("username", getUserInfo(LOGIN_NAME));
+                params.put("password", getUserInfo(LOGIN_PASSWORD));
                 return params;
             }
         };
         queue.add(postRequest);
+        Log.e(TAG, "sendLoginUserInfoToServer: finish");
     }
 
-    private String getUserInfo(String str){
+    public String getUserInfo(String str){
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        Log.e(TAG, "UserInfo : "+prefs.getString(str,null));
+        Log.e(TAG, "getUserInfo : "+str+" "+prefs.getString(str,null));
         return prefs.getString(str,null);
     }
+    public void clearUserInfo(){
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.apply(); // This line is IMPORTANT !!!
+        Log.e(TAG, "clearUserInfo: "+prefs.getString(LOGIN_NAME,null)+prefs.getString(LOGIN_PASSWORD,null));
+    }
+
+    private void saveResponseStatus(String str){
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(RESPONSE_STATUS, str);
+        editor.apply(); // This line is IMPORTANT !!!
+        Log.e(TAG, "Shared Status : "+prefs.getString(RESPONSE_STATUS,null));
+    }
+    public String getResponseStatus(){
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        Log.e(TAG, "getResponseStatus : "+prefs.getString(RESPONSE_STATUS,null));
+        return prefs.getString(RESPONSE_STATUS,null);
+    }
+
 
 }

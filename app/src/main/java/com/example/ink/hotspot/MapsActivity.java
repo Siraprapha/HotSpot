@@ -162,6 +162,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
         Class fragmentClass = null;
+        Fragment fragment;
         switch (menuItem.getItemId()) {
             case R.id.home:
                 //CreateMap();
@@ -181,6 +182,9 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
                 break;
             case R.id.st_wilds:
                 //
+                fragment = new MapsFragment();
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                fragmentManager.beginTransaction().replace(R.id.map,fragment).commit();
                 mapsFragment.caseJson(1);
                 break;
             case R.id.call:
@@ -262,27 +266,18 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     }
 
     @Override
-    public void onLoginSuccess(boolean x){
-        String name;
-        if(x){
-            userpref = new UserPref(this);
-            name = userpref.getFacebookUserInfo("fb_first_name");
-            nav_header_name.setText(name);
-            nav_header_circle.setText(name.substring(0,1));
-        }else{
-            name = "ลงชื่อเข้าใช้";
-            nav_header_name.setText(name);
-            nav_header_circle.setText("A");
-        }
-    }
-    @Override
-    public void updateUserPhoto(){
-
+    public void onLoginSuccess(String username) {
+        nav_header_name.setText(username);
+        nav_header_circle.setText(username.substring(0,1));
     }
 
 
     @Override
     public void onClick(View view) {
+        switch(view.getId()){
+            case R.id.logout:{
 
+            }
+        }
     }
 }

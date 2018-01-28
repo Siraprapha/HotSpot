@@ -31,6 +31,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
                                                                     GoogleApiClient.OnConnectionFailedListener,
                                                                     LocationListener {
+    private static final String TAG = "CurrentLocation";
     private Activity activity;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -153,6 +154,7 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
         //move map camera
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+        Log.e(TAG, "onLocationChanged: camera success");
 
         //stop location updates
         if (mGoogleApiClient != null) {
@@ -174,9 +176,6 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
     }
     public LatLng getCurrLatLng(){
         return new LatLng(getLat(),getLng());
-    }
-    public void movecamera(){
-
     }
 
 }

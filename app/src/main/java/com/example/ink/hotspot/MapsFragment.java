@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -49,8 +50,6 @@ import java.util.ArrayList;
  */
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
-    private Activity activity;
-
     public GoogleMap mMap;
 
     private CurrentLocation currLocate;
@@ -63,7 +62,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootview = inflater.inflate(R.layout.fragment_map, container, false);
@@ -154,7 +153,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
                                 }
                                 //move camera to the last lat,lng marker
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
+                                //mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -204,7 +203,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                                 //String name = datares.get("name").toString();
                             }
                             //move camera to the last lat,lng marker
-                            mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
+                            //mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

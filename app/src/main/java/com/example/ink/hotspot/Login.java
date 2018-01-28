@@ -1,6 +1,7 @@
 package com.example.ink.hotspot;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,6 +39,7 @@ import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.facebook.FacebookSdk.getApplicationContext;
 
@@ -115,6 +118,29 @@ public class Login extends Fragment {
             public void onClick(View view) {
                 String username = fill_username.getText().toString().trim();
                 String password = fill_password.getText().toString().trim();
+                if(Objects.equals(username, "") || Objects.equals(password, "")){
+                    ShowDialog("กรุณาใส่ชื่อผู้ใช้หรือรหัส");
+                }
+                else{
+                    userPref.saveLoginUserInfo(username,password);
+                    String status = userPref.getResponseStatus();
+                    Log.e(TAG, "onClick: "+status);
+                    /*switch(status){
+                        case "200": {
+                            loginListener.onLoginSuccess(userPref.getUserInfo("login_name"));
+                            Toast.makeText(getApplicationContext(),"login success",Toast.LENGTH_LONG).show();
+                        }
+                        case "invalid query row < 1 or >1": {
+                            ShowDialog("ชื่อผู้ใช้หรือรหัสไม่ถูกต้อง กรุณาสมัครสมาชิก");
+                            userPref.clearUserInfo();
+                        }
+                        case "\"error query":{
+                            ShowDialog("กรุณาลองใหม่อีกครั้ง");
+                        }
+                        default:
+                            Log.e(TAG, "onClick: button_login ResponseStatus == null");
+                    }*/
+                }
                 //validate
             }
         });
@@ -268,8 +294,7 @@ public class Login extends Fragment {
     }
 
     public interface LoginListener{
-        void onLoginSuccess(boolean x);
-        void updateUserPhoto();
+        void onLoginSuccess(String username);
     }
     private void deleteAccessToken() {
         accessTokenTracker = new AccessTokenTracker() {
@@ -285,6 +310,25 @@ public class Login extends Fragment {
                 }
             }
         };
+    }
+
+    private void ShowDialog(String message){
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(getContext());
+        builder.setMessage(message);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Toast.makeText(getContext(),
+                        "...", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //dialog.dismiss();
+            }
+        });
+        builder.show();
     }
 
 }
