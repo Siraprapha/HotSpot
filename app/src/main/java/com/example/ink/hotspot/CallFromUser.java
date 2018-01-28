@@ -52,8 +52,9 @@ public class CallFromUser extends Fragment {
     private String savedImageURL = "";
     private String upLoadServerUri = "http://tatam.esy.es/uploads/modules/uploadimg.php";
 
-    public CallFromUser(){
-
+    public static Fragment newInstance() {
+        CallFromUser c = new CallFromUser();
+        return c;
     }
 
     @Override
@@ -398,5 +399,6 @@ public class CallFromUser extends Fragment {
         super.onStop();
         Log.i("Check", "onStop");
     }
+
 
 }

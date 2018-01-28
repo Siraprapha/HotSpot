@@ -3,6 +3,7 @@ package com.example.ink.hotspot;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -50,52 +51,44 @@ import java.util.ArrayList;
  */
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
+    private Activity activity;
+
+    private Context context;
+
     public GoogleMap mMap;
 
     private CurrentLocation currLocate;
 
     private KmlLayer layer;
 
-    public MapsFragment() {
-        // Required empty public constructor
+    public static Fragment newInstance() {
+        MapsFragment mapsFragment = new MapsFragment();
+        return mapsFragment;
     }
-
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootview = inflater.inflate(R.layout.fragment_map, container, false);
+
         SupportMapFragment mapFragment = SupportMapFragment.newInstance();
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_map_container, mapFragment);
         fragmentTransaction.commit();
         mapFragment.getMapAsync(this);
+        Toast.makeText(context,"MapsFragment is on stack",Toast.LENGTH_LONG).show();
         return rootview;
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        //Initialize Google Play Services
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(getActivity(),android.Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
-
-                Log.e("Inky","ACCESS_FINE_LOCATION");
-                currLocate = new CurrentLocation(mMap,getActivity());
-                mMap.setMyLocationEnabled(true);
-            }
-        }
-        else {
-            //ShowDialog();
-            Log.e("Inky","NO ACCESS_FINE_LOCATION fragment");
-            mMap.setMyLocationEnabled(true);
-            currLocate = new CurrentLocation(mMap,getActivity());
-            String url = "http://tatam.esy.es/api.php?key=map";
-            CallJsonHotSpot(mMap, url);
-            //handler.postDelayed(runnable, 10000);
-        }
+        Log.e("Inky", "NO ACCESS_FINE_LOCATION fragment");
+        //currLocate = new CurrentLocation(mMap,activity);
+        String url = "http://tatam.esy.es/api.php?key=map";
+        CallJsonHotSpot(mMap, url);
+        //handler.postDelayed(runnable, 10000);
     }
 
     @Override
@@ -163,16 +156,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             // TODO Auto-generated method stub
-                            Log.e("Json", "Error on"+error);
+                            Log.e("Json", "Error on"+error.getLocalizedMessage());
                         }
                     });
 
 // Access the RequestQueue through your singleton class.
-            MySingleton.getInstance(getContext()).addToRequestQueue(jsObjRequest);
+            MySingleton.getInstance(context).addToRequestQueue(jsObjRequest);
         }
         else{
             Log.e("Json", "URL not found.");
-            Toast.makeText(getContext(),"URL Not found.",Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
         }
 
 
@@ -208,7 +201,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             e.printStackTrace();
                         }
                         Log.e("Json", "Finish mark json");
-                        Toast.makeText(getActivity(),"Finish mark json",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context,"Finish mark json",Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -219,7 +212,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 });
 
 // Access the RequestQueue through your singleton class.
-        MySingleton.getInstance(getContext()).addToRequestQueue(jsObjRequest);
+        MySingleton.getInstance(context).addToRequestQueue(jsObjRequest);
 
     }
 
@@ -233,23 +226,23 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
         try {
             Log.e("KML", "showKML: ");
-            Toast.makeText(getActivity(),"start show KML",Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,"start show KML",Toast.LENGTH_SHORT).show();
             //if(getContext()!=null) {Log.e("Context", "showKML: Context is notnull"+getContext());}
             if(key==0){
                 //FFMC
                 //KmlLayer layer = new KmlLayer(mMap, kmlInputStream, getApplicationContext());
-                layer = new KmlLayer(mMap, R.raw.ffmc, getContext());
+                layer = new KmlLayer(mMap, R.raw.ffmc, context);
                 //layer.addLayerToMap();
             }
             else{
                 //FWI
-                layer = new KmlLayer(mMap, R.raw.fwi, getContext());
+                layer = new KmlLayer(mMap, R.raw.fwi, context);
                 layer.addLayerToMap();
             }
             //Toast.makeText(getContext(),"ไม่พบข้อมูล"+layer.getContainers().toString(),Toast.LENGTH_SHORT).show();
-            if(layer==null)Log.e("Context", "showKML: Context is notnull"+getContext());
+            if(layer==null)Log.e("Context", "showKML: Context is notnull"+context);
             Log.e("KML", "showKML: already");
-            Toast.makeText(getActivity(),"finish show KML",Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,"finish show KML",Toast.LENGTH_SHORT).show();
 
             //movecamera
 
@@ -257,5 +250,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+        this.activity = (Activity)context;
+    }
+
 
 }

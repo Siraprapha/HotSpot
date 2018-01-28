@@ -1,5 +1,6 @@
 package com.example.ink.hotspot;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -68,12 +69,13 @@ public class Login extends Fragment {
     private String[] user_data = null;
 
     private UserPref userPref;
+    private Context context;
+    private Activity activity;
 
-    public Login() {
-        // Required empty public constructor
+    public static Fragment newInstance() {
+        Login l = new Login();
+        return l;
     }
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,7 +113,7 @@ public class Login extends Fragment {
         button_login = rootview.findViewById(R.id.button_login);
         button_register = rootview.findViewById(R.id.button_register);
 
-        userPref = new UserPref(getApplicationContext());
+        userPref = new UserPref(context);
         //onClicklogin
         button_login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -185,20 +187,20 @@ public class Login extends Fragment {
                 String userToken = loginResult.getAccessToken().getToken();
                 userPref.saveAccessToken(userToken);
 
-                Toast.makeText(getActivity(),"Welcome "+userPref.getFacebookUserInfo("fb_first_name"),Toast.LENGTH_LONG).show();
+                Toast.makeText(context,"Welcome "+userPref.getFacebookUserInfo("fb_first_name"),Toast.LENGTH_LONG).show();
                 //loginListener.onLoginSuccess(true);
             }
             @Override
             public void onCancel() {
                 // App code
                 is_login = false;
-                Toast.makeText(getActivity(),"Cancel Login ",Toast.LENGTH_LONG).show();
+                Toast.makeText(context,"Cancel Login ",Toast.LENGTH_LONG).show();
             }
             @Override
             public void onError(FacebookException exception) {
                 // App code
                 is_login = false;
-                Toast.makeText(getActivity(),"Login Error ",Toast.LENGTH_LONG).show();
+                Toast.makeText(context,"Login Error ",Toast.LENGTH_LONG).show();
                 Log.e(TAG, "onError: "+exception.getMessage());
                 Log.e(TAG, "onError: "+exception.getCause());
                 deleteAccessToken();
@@ -209,7 +211,7 @@ public class Login extends Fragment {
             @Override
             public void onClick(View view) {
                 Log.e(TAG, "onClick: "+userPref.getToken());
-                LoginManager.getInstance().logInWithReadPermissions(getActivity(), permissions);
+                LoginManager.getInstance().logInWithReadPermissions(activity, permissions);
             }
         });
     }
@@ -228,7 +230,7 @@ public class Login extends Fragment {
             request.setParameters(parameters);
             GraphRequest.executeBatchAsync(request);
         } else {
-            Toast.makeText(getActivity(),"accessToken is null",Toast.LENGTH_LONG).show();
+            Toast.makeText(context,"accessToken is null",Toast.LENGTH_LONG).show();
         }
     }
     //json to string
@@ -279,8 +281,10 @@ public class Login extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        this.context = context;
+        this.activity = (Activity)context;
         try {
-            loginListener = (MapsActivity) getActivity();
+            loginListener = (MapsActivity) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException("Must implement LoginListener");
         }
@@ -314,11 +318,11 @@ public class Login extends Fragment {
 
     private void ShowDialog(String message){
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(getContext());
+                new AlertDialog.Builder(context);
         builder.setMessage(message);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(getContext(),
+                Toast.makeText(context,
                         "...", Toast.LENGTH_SHORT).show();
             }
         });

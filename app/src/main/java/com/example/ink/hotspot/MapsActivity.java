@@ -38,22 +38,12 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     public Toolbar toolbar;
     public NavigationView nvDrawer;
     ActionBarDrawerToggle drawerToggle;
-    public LinearLayout nvheader;
     View header_view;
     TextView nav_header_name;
     private static final String TAG = "MapsActivity";
     TextView nav_header_circle;
-    private SwitchCompat switcher;
-
-    public MapsFragment mapsFragment;
-
-    private GoogleMap mMap;
-
-    private String[] user_data;
-    private boolean is_login = false;
 
     UserPref userpref;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,34 +53,10 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
 
         setDrawer();
 
-        if(savedInstanceState == null){
-            //CreateMap();
-            try {
-                NewFragment(MapsFragment.class);
-            } catch (IllegalAccessException | InstantiationException e) {
-                e.printStackTrace();
-            }
-        }
-        else {
-
-        }
-        String value;
-        Bundle bundle = getIntent().getExtras();
-        if(bundle!=null){
-            value = bundle.getString("casenoti");
-            if(value != null){
-                switch (value){
-                    case "fireupdate":{
-                        Log.e("push noti test", "fire update" );
-                        break;
-                    }
-                    case "userrequest":{
-                        break;
-                    }
-                    default:break;
-                }
-            }
-        }
+        Fragment mapsFragment = MapsFragment.newInstance();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.map, mapsFragment)
+                            .commit();
 
     }
     //toolbar toggle
@@ -111,14 +77,14 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         header_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Class user_acc = Login.class;
-                try {
-                    NewFragment(user_acc);
-                    Toast.makeText(getApplication() ,"Login Fragment",Toast.LENGTH_SHORT);
-                    mDrawer.closeDrawers();
-                } catch (IllegalAccessException | InstantiationException e) {
-                    e.printStackTrace();
-                }
+                //Class user_acc = Login.class;
+                Fragment user_acc = Login.newInstance();
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.map,user_acc)
+                        .addToBackStack(null)
+                        .commit();
+                mDrawer.closeDrawers();
             }
         });
         nav_header_circle = header_view.findViewById(R.id.nav_header_circle);
@@ -158,67 +124,48 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
                     }
                 });
     }
-    public static final String EXTRA_MESSAGE = "Inkie1234";
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        Class fragmentClass = null;
         Fragment fragment;
         switch (menuItem.getItemId()) {
             case R.id.home:
-                //CreateMap();
-                fragmentClass = MapsFragment.class;
+                Fragment current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (!(current_fragment instanceof MapsFragment)) {
+                    getSupportFragmentManager().popBackStack();
+                }
                 mDrawer.openDrawer(GravityCompat.START);
-
                 break;
             case R.id.ffmc:
-                mapsFragment.showKML(mMap,0);
+                //mapsFragment.showKML(mMap,0);
+                Toast.makeText(this,"ffmc",Toast.LENGTH_LONG).show();
                 break;
             case R.id.fwi:
-                mapsFragment.showKML(mMap,1);
+                //mapsFragment.showKML(mMap,1);
+                Toast.makeText(this,"fwi",Toast.LENGTH_LONG).show();
                 break;
             case R.id.st_forest:
-                //
-                mapsFragment.caseJson(0);
+                //mapsFragment.caseJson(0);
+                Toast.makeText(this,"forest",Toast.LENGTH_LONG).show();
                 break;
             case R.id.st_wilds:
-                //
-                fragment = new MapsFragment();
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.map,fragment).commit();
-                mapsFragment.caseJson(1);
+                //mapsFragment.caseJson(1);
+                Toast.makeText(this,"wild",Toast.LENGTH_LONG).show();
                 break;
             case R.id.call:
-                fragmentClass = CallFromUser.class;
+                fragment = CallFromUser.newInstance();
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.map, fragment)
+                        .addToBackStack(null)
+                        .commit();
                 break;
             case R.id.about:
-                //fragmentClass = wildfire_notify.class;
+                Toast.makeText(this,"about",Toast.LENGTH_LONG).show();
                 break;
             default:
-                fragmentClass = null;
+                fragment = null;
         }
-
-        // Highlight the selected item has been done by NavigationView
-        //menuItem.setChecked(true);
-        if(fragmentClass!= null){
-            try {
-                NewFragment(fragmentClass);
-            } catch (IllegalAccessException | InstantiationException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Set action bar title
-        TextView toolbar = findViewById(R.id.toolbar_text);
-        toolbar.setText(menuItem.getTitle());
-
         // Close the navigation drawer
         mDrawer.closeDrawers();
-    }
-    public void NewFragment(Class fragmentClass) throws IllegalAccessException, InstantiationException {
-        Fragment fragment = (Fragment) fragmentClass.newInstance();
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.map, fragment).commit();
     }
     public boolean onOptionsItemSelected(MenuItem item) {
         // The action bar home/up action should open or close the drawer.
@@ -227,14 +174,6 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         }
         return super.onOptionsItemSelected(item);
     }
-
-    //Start Map
-   /* public void CreateMap() {
-        mapsFragment = new MapsFragment();
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.map, mapsFragment);
-        fragmentTransaction.commit();
-    }*/
 
     public final Runnable runnable = new Runnable() {
 
@@ -246,38 +185,43 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     };
 
     //Dialog
-    private void ShowDialog(){
+    private void ShowDialogExit(){
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(MapsActivity.this);
-        builder.setMessage("Please check your internet connection.");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setMessage("คุณต้องการที่จะออกจากแอพ?");
+        builder.setPositiveButton("ใช่", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(getApplicationContext(),
-                        "...", Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
-        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("ไม่ใช่", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //dialog.dismiss();
+                dialog.cancel();
             }
         });
         builder.show();
     }
 
+    //LoginListener
     @Override
     public void onLoginSuccess(String username) {
         nav_header_name.setText(username);
         nav_header_circle.setText(username.substring(0,1));
     }
 
-
     @Override
     public void onClick(View view) {
-        switch(view.getId()){
-            case R.id.logout:{
+    }
 
-            }
+    @Override
+    public void onBackPressed() {
+        if(getSupportFragmentManager().getBackStackEntryCount()==0){
+            ShowDialogExit();
+        }else {
+            super.onBackPressed();
         }
     }
+
 }

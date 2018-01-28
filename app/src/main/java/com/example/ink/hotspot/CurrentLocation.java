@@ -33,6 +33,7 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
                                                                     LocationListener {
     private static final String TAG = "CurrentLocation";
     private Activity activity;
+    private Context context;
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
     private Marker mCurrLocationMarker;

@@ -43,7 +43,6 @@
         android:text="ออกจากระบบ"
         android:textColor="#fff"
         android:textSize="18sp"
-        android:background="#470000"
-        android:onClick="onClick"/>
+        android:background="#470000" />
 
 </RelativeLayout>
