@@ -43,6 +43,7 @@ public class UserPref {
     private final String LOGIN_EMAIL = "login_email";
     private final String LOGIN_PASSWORD = "login_password";
     private final String RESPONSE_STATUS = "response_status";
+    public boolean IS_LOGGIN;
     // fb_id fb_first_name fb_name fb_email currLocation
 
     // Constructor
@@ -149,18 +150,18 @@ public class UserPref {
     }
 
     //Register
-    private void saveRegisterUserInfo(String username,String password, String email){
+    void saveRegisterUserInfo(String username, String password, String email){
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(REGIS_NAME, username);
         editor.putString(REGIS_PASSWORD, password);
         editor.putString(REGIS_EMAIL, email);
         editor.apply(); // This line is IMPORTANT !!!
-        Log.e(TAG, "Shared Name : "+prefs.getString(REGIS_NAME,null)+"\nEmail : "+
+        Log.d(TAG, "Shared Name : "+prefs.getString(REGIS_NAME,null)+"\nEmail : "+
                 prefs.getString(REGIS_EMAIL,null)+"\nPassword : "+prefs.getString(REGIS_PASSWORD,null));
         sendRegisterUserInfoToServer();
     }
-    public void sendRegisterUserInfoToServer(){
+    private void sendRegisterUserInfoToServer(){
         RequestQueue queue = Volley.newRequestQueue(context);  // this = context
         final String url = "http://tatam.esy.es/usersystem/user_request.php";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
@@ -168,13 +169,15 @@ public class UserPref {
                 {
                     @Override
                     public void onResponse(String response) {
+                        Log.d(TAG,"onResponse"+ response);
                         JSONObject jsonObject= null;
                         try {
                             jsonObject = new JSONObject(response);
                             JSONArray arr = jsonObject.getJSONArray("response");
                             JSONObject o = arr.getJSONObject(0);
-                            JSONObject datares = o.getJSONObject(Integer.toString(1));
-                            String status = (String) datares.get("status");
+                            //JSONObject datares = o.getJSONObject(Integer.toString(1));
+                            String status = (String) o.get("status");
+                            Log.d(TAG,"onResponse status="+ status);
                             //Json(url,jsonObject);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -196,10 +199,10 @@ public class UserPref {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("post", "signup");
                 params.put("method", "add");
-                params.put("username", getFacebookUserInfo(REGIS_NAME));
-                params.put("email", getFacebookUserInfo(REGIS_EMAIL));
-                params.put("password", getFacebookUserInfo(REGIS_PASSWORD));
-                params.put("token_device", getDeviceToken());
+                params.put("username", getUserInfo(REGIS_NAME));
+                params.put("email", getUserInfo(REGIS_EMAIL));
+                params.put("password", getUserInfo(REGIS_PASSWORD));
+                params.put("token_device", "");
                 params.put("token_auth", "");
                 params.put("role", "0");
                 return params;
@@ -226,14 +229,16 @@ public class UserPref {
                 {
                     @Override
                     public void onResponse(String response) {
-                        Log.i(TAG,"onResponse"+ response);
+                        Log.d(TAG,"onResponse"+ response);
                         JSONObject jsonObject= null;
                         try {
                             jsonObject = new JSONObject(response);
                             JSONArray arr = jsonObject.getJSONArray("response");
                             JSONObject o = arr.getJSONObject(0);
-                            JSONObject datares = o.getJSONObject(Integer.toString(1));
-                            String status = (String) datares.get("status");
+                            //JSONObject datares = o.getJSONObject(Integer.toString(1));
+                            String status = (String) o.get("status");
+                            String user = (String) o.get("username");
+                            String email = (String) o.get("email");
                             saveResponseStatus(status);
                             Log.d(TAG, "onResponse: status"+status);
                             //Json(url,jsonObject);

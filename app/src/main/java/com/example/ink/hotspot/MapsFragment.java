@@ -77,6 +77,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         fragmentTransaction.replace(R.id.fragment_map_container, mapFragment);
         fragmentTransaction.commit();
         mapFragment.getMapAsync(this);
+
         Toast.makeText(context,"MapsFragment is on stack",Toast.LENGTH_LONG).show();
         return rootview;
     }

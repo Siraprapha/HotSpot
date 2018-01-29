@@ -52,10 +52,8 @@ public class Login extends Fragment {
     private static final String TAG = "Login";
     private static final String SET_NAME_IF_NOT_LOGIN = "ลงชื่อเข้าใช้";
 
-    private EditText fill_username;
-    private EditText fill_password;
-    private Button button_login;
-    private Button button_register;
+    private EditText fill_username,fill_password;
+    private Button button_login,button_register;
     LoginButton loginButton;
 
     CallbackManager callbackManager;
@@ -79,6 +77,7 @@ public class Login extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /*
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(getContext());
 
@@ -98,7 +97,7 @@ public class Login extends Fragment {
                 }
             }
         };
-        callbackManager = CallbackManager.Factory.create();
+        callbackManager = CallbackManager.Factory.create();*/
     }
 
     @Override
@@ -150,25 +149,22 @@ public class Login extends Fragment {
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Fragment fragment = null;
-                try {
-                    fragment = Register.class.newInstance();
-                } catch (java.lang.InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
+                Fragment fragment = Register.newInstance();
                 // Insert the fragment by replacing any existing fragment
                 FragmentManager fragmentManager = getFragmentManager();
                 fragmentManager.beginTransaction().replace(R.id.map, fragment).commit();
             }
         });
         //onClickfacebook
+        /*
         permissions = Arrays.asList("public_profile","email");
         loginButton = rootview.findViewById(R.id.login_button_fb);
-        FacebookLoginButton();
+        FacebookLoginButton();*/
+
+        Toast.makeText(context,"Login is on stack",Toast.LENGTH_LONG).show();
         return rootview;
     }
+    /*
     private void FacebookLoginButton(){
 
         loginButton.setReadPermissions(permissions);
@@ -214,8 +210,9 @@ public class Login extends Fragment {
                 LoginManager.getInstance().logInWithReadPermissions(activity, permissions);
             }
         });
-    }
+    }*/
     //request json from facebook
+    /*
     private void fetchUserInfo(AccessToken ac) {
         if (ac != null) {
             GraphRequest request = GraphRequest.newMeRequest(
@@ -232,8 +229,9 @@ public class Login extends Fragment {
         } else {
             Toast.makeText(context,"accessToken is null",Toast.LENGTH_LONG).show();
         }
-    }
+    }*/
     //json to string
+    /*
     private Bundle getFacebookData(JSONObject object) {
         Bundle bundle = new Bundle();
 
@@ -254,7 +252,7 @@ public class Login extends Fragment {
         }
 
         return bundle;
-    }
+    }*/
 /*
     private void setUserName(){
         String name = userPref.getFacebookUserInfo("fb_first_name");
@@ -293,7 +291,7 @@ public class Login extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        accessTokenTracker.stopTracking();
+        //accessTokenTracker.stopTracking();
         //userPref.sendToServer();
     }
 
@@ -318,11 +316,11 @@ public class Login extends Fragment {
 
     private void ShowDialog(String message){
         AlertDialog.Builder builder =
-                new AlertDialog.Builder(context);
+                new AlertDialog.Builder(getContext());
         builder.setMessage(message);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(context,
+                Toast.makeText(getContext(),
                         "...", Toast.LENGTH_SHORT).show();
             }
         });

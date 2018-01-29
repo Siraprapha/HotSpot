@@ -67,7 +67,7 @@
 
     </LinearLayout>
 
-    <TextView
+    <!--<TextView
         android:id="@+id/or"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -76,9 +76,9 @@
         android:layout_centerHorizontal="true"
         android:text="หรือ"
         android:textColor="#470000"
-        android:textSize="20sp" />
+        android:textSize="20sp" />-->
 
-    <com.facebook.login.widget.LoginButton
+    <!--<com.facebook.login.widget.LoginButton
         android:id="@+id/login_button_fb"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -88,7 +88,7 @@
         android:layout_centerHorizontal="true"
         android:textSize="20sp"
         android:textAlignment="center"
-        facebook:com_facebook_confirm_logout="true" />
+        facebook:com_facebook_confirm_logout="true" />-->
 
 
 </RelativeLayout>

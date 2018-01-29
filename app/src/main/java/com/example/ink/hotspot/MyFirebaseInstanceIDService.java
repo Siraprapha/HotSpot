@@ -35,16 +35,17 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
 
         Log.d(TAG, "Refreshed token: " + refreshedToken);
-        Toast.makeText(getApplicationContext(),refreshedToken,Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(),refreshedToken,Toast.LENGTH_LONG).show();
         sendRegistrationToServer(refreshedToken);
+        //userpref.saveDeviceToken(refreshedToken);
     }
 
-    private void sendRegistrationToServer(String token) {
+    private void sendRegistrationToServer(final String token) {
         // TODO: Implement this method to send token to your app server.
-        userpref.saveDeviceToken(token);
+
 
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());  // this = context
-        final String url = "http://tatam.esy.es/usersystem/user_request.php";
+        final String url = "http://tatam.esy.es/usersystem/user_token.php";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {
@@ -52,11 +53,13 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
                     public void onResponse(String response) {
                         JSONObject jsonObject= null;
                         try {
+                            Log.d(TAG, "onResponse: "+response);
                             jsonObject = new JSONObject(response);
                             JSONArray arr = jsonObject.getJSONArray("response");
                             JSONObject o = arr.getJSONObject(0);
-                            JSONObject datares = o.getJSONObject(Integer.toString(1));
-                            String status = (String) datares.get("status");
+                            //JSONObject datares = o.getJSONObject(Integer.toString(1));
+                            String status = (String) o.get("status");
+
                             //Json(url,jsonObject);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -76,14 +79,9 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
             protected Map<String, String> getParams()
             {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("post", "signup");
+                params.put("post", "puttoken");
                 params.put("method", "add");
-                params.put("username", "");
-                params.put("email", "");
-                params.put("password", "");
-                params.put("token_device", userpref.getDeviceToken());
-                params.put("token_auth", "");
-                params.put("role", "0");
+                params.put("token_device", token);
                 return params;
             }
         };
