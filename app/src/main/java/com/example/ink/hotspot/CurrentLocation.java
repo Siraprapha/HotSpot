@@ -40,13 +40,15 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
     private double lat;
     private double lng;
 
-    public CurrentLocation(GoogleMap mMap, Activity activity){
+    public CurrentLocation(GoogleMap mMap, Context context){
         this.mMap = mMap;
-        this.activity = activity;
+        this.context = context;
+        this.activity = (Activity)context;
+
     }
 
     protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(activity)
+        mGoogleApiClient = new GoogleApiClient.Builder(context)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
@@ -57,7 +59,7 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
     public boolean checkLocationPermission(){
-        if (ContextCompat.checkSelfPermission(activity,
+        if (ContextCompat.checkSelfPermission(context,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -96,7 +98,7 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted. Do the
                     // contacts-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(activity,
+                    if (ContextCompat.checkSelfPermission(context,
                             Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
                         if (mGoogleApiClient == null) {
@@ -107,7 +109,7 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
                 } else {
 
                     // Permission denied, Disable the functionality that depends on this permission.
-                    Toast.makeText(activity, "permission denied", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "permission denied", Toast.LENGTH_LONG).show();
                 }
             }
             // other 'case' lines to check for other permissions this app might request.
@@ -122,7 +124,7 @@ public class CurrentLocation implements GoogleApiClient.ConnectionCallbacks,
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        if (ContextCompat.checkSelfPermission(activity,
+        if (ContextCompat.checkSelfPermission(context,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);

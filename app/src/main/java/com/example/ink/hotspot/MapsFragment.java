@@ -6,6 +6,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,6 +28,8 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -35,6 +40,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.maps.android.data.kml.KmlLayer;
 
 import org.json.JSONArray;
@@ -43,13 +50,22 @@ import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+
+import static android.content.Context.LOCATION_SERVICE;
 
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
+
+    private static final String KEY_CAMERA_POSITION = "camera_position";
+    private static final String KEY_LOCATION = "location";
+    private static final int DEFAULT_ZOOM = 5;
+
+    private static final String TAG = "MapsFragment";
 
     private Activity activity;
 
@@ -58,12 +74,30 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public GoogleMap mMap;
 
     private CurrentLocation currLocate;
+    LocationManager locationManager;
+    String provider;
+    LatLng myPosition;
 
     private KmlLayer layer;
 
+    boolean mLocationPermissionGranted;
+    FusedLocationProviderClient mFusedLocationProviderClient;
+    public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 123;
+    Location mLastKnownLocation;
+    LatLng mDefaultLocation = new LatLng(13.738938, 100.527688);
+
     public static Fragment newInstance() {
-        MapsFragment mapsFragment = new MapsFragment();
-        return mapsFragment;
+        MapsFragment m = new MapsFragment();
+        return m;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Construct a FusedLocationProviderClient.
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
+
     }
 
     @Override
@@ -78,7 +112,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         fragmentTransaction.commit();
         mapFragment.getMapAsync(this);
 
-        Toast.makeText(context,"MapsFragment is on stack",Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "MapsFragment is on stack", Toast.LENGTH_LONG).show();
         return rootview;
     }
 
@@ -86,8 +120,34 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         Log.e("Inky", "NO ACCESS_FINE_LOCATION fragment");
+        if (ActivityCompat.checkSelfPermission(context,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
+        /*
+        locationManager = (LocationManager) activity.getSystemService(LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        provider = locationManager.getBestProvider(criteria, true);
+        Location location = locationManager.getLastKnownLocation(provider);
+        LatLng center = new LatLng(location.getLatitude(), location.getLongitude());
+        CameraPosition.Builder cameraPosition = new CameraPosition.Builder();
+        cameraPosition.target(center);
+        cameraPosition.zoom(DEFAULT_ZOOM);
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition.build()));*/
+
         //currLocate = new CurrentLocation(mMap,activity);
-        String url = "http://tatam.esy.es/api.php?key=map";
+        //String url = "http://tatam.esy.es/api.php?key=map";
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,DEFAULT_ZOOM));
+        String url = "http://tatam.esy.es/test/querytestmodule.php?key=maprealtime";
         CallJsonHotSpot(mMap, url);
         //handler.postDelayed(runnable, 10000);
     }
@@ -192,6 +252,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                                 lng =  Double.parseDouble((String)datares.get("longitude"));
 //                                    lat =  (double)datares.get("latitude");
 //                                    lng =  (double)datares.get("longitude");
+                                Log.e(TAG, "onResponse: lat "+lat+"   long "+lng+"\n");
                                 mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng))
                                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame)));
                                 //String name = datares.get("name").toString();
@@ -218,37 +279,58 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     //KML
-    public void showKML(GoogleMap googleMap,int key){
+    public void showKML(GoogleMap googleMap,int key,int day){
         mMap = googleMap;
         //mMap.clear();
+
         if(layer != null){
+            Log.e(TAG, "showKML: layer "+layer.toString());
             layer.removeLayerFromMap();
             Log.e("showKML", "showKML: layer is not null");
+            Log.e(TAG, "showKML: layer removed "+layer.toString());
         }
         try {
             Log.e("KML", "showKML: ");
-            Toast.makeText(context,"start show KML",Toast.LENGTH_SHORT).show();
-            //if(getContext()!=null) {Log.e("Context", "showKML: Context is notnull"+getContext());}
+            //Toast.makeText(context,"start show KML",Toast.LENGTH_SHORT).show();
             if(key==0){
+                switch (day){
+                    case 1:layer = new KmlLayer(mMap, R.raw.ffmc_past_2, context);break;
+                    case 2:layer = new KmlLayer(mMap, R.raw.ffmc_past_1, context);break;
+                    case 3:layer = new KmlLayer(mMap, R.raw.ffmc, context);break;
+                    case 4:layer = new KmlLayer(mMap, R.raw.ffmc_future_1, context);break;
+                    case 5:layer = new KmlLayer(mMap, R.raw.ffmc_future_2, context);break;
+                    default:layer = new KmlLayer(mMap, R.raw.ffmc, context);break;
+                }
                 //FFMC
                 //KmlLayer layer = new KmlLayer(mMap, kmlInputStream, getApplicationContext());
-                layer = new KmlLayer(mMap, R.raw.ffmc, context);
-                //layer.addLayerToMap();
+                //layer = new KmlLayer(mMap, R.raw.ffmc, context);
+                layer.addLayerToMap();
             }
             else{
+                switch (day){
+                    case 1:layer = new KmlLayer(mMap, R.raw.fwi_past_2, context);break;
+                    case 2:layer = new KmlLayer(mMap, R.raw.fwi_past_1, context);break;
+                    case 3:layer = new KmlLayer(mMap, R.raw.fwi, context);break;
+                    case 4:layer = new KmlLayer(mMap, R.raw.fwi_future_1, context);break;
+                    case 5:layer = new KmlLayer(mMap, R.raw.fwi_future_2, context);break;
+                    default:layer = new KmlLayer(mMap, R.raw.fwi, context);break;
+                }
                 //FWI
-                layer = new KmlLayer(mMap, R.raw.fwi, context);
+                //layer = new KmlLayer(mMap, R.raw.fwi, context);
                 layer.addLayerToMap();
             }
             //Toast.makeText(getContext(),"ไม่พบข้อมูล"+layer.getContainers().toString(),Toast.LENGTH_SHORT).show();
             if(layer==null)Log.e("Context", "showKML: Context is notnull"+context);
             Log.e("KML", "showKML: already");
             Toast.makeText(context,"finish show KML",Toast.LENGTH_SHORT).show();
-
             //movecamera
-
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
+        }
+    }
+    public void removeLayer(){
+        if(layer!=null){
+            layer.removeLayerFromMap();
         }
     }
 

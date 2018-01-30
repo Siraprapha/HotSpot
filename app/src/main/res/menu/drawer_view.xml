@@ -1,28 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-<group android:checkableBehavior="all">
     <item
         android:id="@+id/home"
-        android:title="@string/home"
-        android:icon="@mipmap/ic_home_black_24dp" />
-
+        android:icon="@mipmap/ic_home_black_24dp"
+        android:title="@string/home" />
     <item android:title="@string/kmz">
         <menu>
-            <group >
+            <group
+                android:id="@+id/group_kmz"
+                android:checkableBehavior="single" >
                 <item
                     android:id="@+id/ffmc"
-                    android:title="FFMC" />
+                    android:title="FFMC"
+                    android:icon="@drawable/plus"/>
                 <item
                     android:id="@+id/fwi"
-                    android:title="FWI"/>
+                    android:title="FWI"
+                    android:icon="@drawable/plus">
+                </item>
             </group>
         </menu>
     </item>
 
     <item android:title="@string/station">
         <menu>
-            <group >
+            <group
+                android:id="@+id/group_station"
+                android:checkableBehavior="single">
                 <item
                     android:id="@+id/st_forest"
                     android:title="@string/st_forest"/>
@@ -32,19 +37,13 @@
             </group>
         </menu>
     </item>
-</group>
-    <item android:title="">
-        <menu>
-            <group >
-                <item
-                    android:id="@+id/call"
-                    android:title="@string/emergency"
-                    android:enabled="false"/>
-                <item
-                    android:id="@+id/about"
-                    android:title="@string/about" />
-            </group>
-        </menu>
-    </item>
+    <item
+        android:id="@+id/call"
+        android:title="@string/emergency"
+        android:enabled="false"/>
+    <item
+        android:id="@+id/about"
+        android:title="@string/about" />
+
 
 </menu>

@@ -4,7 +4,7 @@
 		<description>Overlay shows Mount Etna eruptingon July 13th, 2001.</description>
 		<color>85ffffff</color>
 		<Icon>
-			<href>http://tatam.esy.es/resources/fwitp_1.png</href>
+			<href>http://tatam.esy.es/resources/fwitp_1_3.png</href>
 			<viewBoundScale> 0.75 </viewBoundScale>
 		</Icon>
 		<LatLonBox>

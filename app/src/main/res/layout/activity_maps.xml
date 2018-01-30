@@ -18,9 +18,23 @@
         android:layout_height="wrap_content" />
     <!-- The main content view where fragments are loaded -->
     <FrameLayout
-        android:id="@+id/map"
+
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/map" />
+        <ImageView
+            android:id="@+id/kml_color_level"
+            android:layout_width="75dp"
+            android:layout_height="200dp"
+            android:layout_gravity="right"
+            android:background="#000"
+            android:src="@drawable/image_web"
+            android:visibility="gone" />
+
+
     </FrameLayout>
 
 </LinearLayout>
