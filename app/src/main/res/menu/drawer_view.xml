@@ -39,8 +39,7 @@
     </item>
     <item
         android:id="@+id/call"
-        android:title="@string/emergency"
-        android:enabled="false"/>
+        android:title="@string/emergency"/>
     <item
         android:id="@+id/about"
         android:title="@string/about" />

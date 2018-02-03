@@ -123,7 +123,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         //currLocate = new CurrentLocation(mMap,activity);
         //String url = "http://tatam.esy.es/api.php?key=map";
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,DEFAULT_ZOOM));
-        String url = "http://tatam.esy.es/test/querytestmodule.php?key=maprealtime";
+        String url = "http://tatam.esy.es/test/api.php?key=maprealtime";
         CallJsonHotSpot(mMap, url);
         //handler.postDelayed(runnable, 10000);
     }
@@ -275,7 +275,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     case 4:layer = new KmlLayer(mMap, R.raw.ffmc_3, context);break;
                     case 5:layer = new KmlLayer(mMap, R.raw.ffmc_4, context);break;
                     case 6:layer = new KmlLayer(mMap, R.raw.ffmc_5, context);break;
-                    default:layer = new KmlLayer(mMap, R.raw.ffmc, context);break;
+                    default:layer = new KmlLayer(mMap, R.raw.ffmc_0, context);break;
                 }
                 //FFMC
                 //KmlLayer layer = new KmlLayer(mMap, kmlInputStream, getApplicationContext());
@@ -291,7 +291,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     case 4:layer = new KmlLayer(mMap, R.raw.fwi_3, context);break;
                     case 5:layer = new KmlLayer(mMap, R.raw.fwi_4, context);break;
                     case 6:layer = new KmlLayer(mMap, R.raw.fwi_5, context);break;
-                    default:layer = new KmlLayer(mMap, R.raw.fwi, context);break;
+                    default:layer = new KmlLayer(mMap, R.raw.fwi_0, context);break;
                 }
                 //FWI
                 //layer = new KmlLayer(mMap, R.raw.fwi, context);

@@ -71,7 +71,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         public void run() {
 //            Toast.makeText(MapsActivity.this, "Refresh ", Toast.LENGTH_SHORT).show();
             if (mapsFragment instanceof MapsFragment) {
-                String url = "http://tatam.esy.es/test/querytestmodule.php?key=maprealtime";
+                String url = "http://tatam.esy.es/test/api.php?key=maprealtime";
                 ((MapsFragment)mapsFragment).CallJsonHotSpot(((MapsFragment)mapsFragment).getmMap(), url);
             }
             handler.postDelayed(runnable,60000);
@@ -216,7 +216,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
                 }
                 break;
             case R.id.call:
-                fragment = CallFromUser.newInstance();
+                fragment = UserCall.newInstance();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.map, fragment)
                         .addToBackStack(null)
@@ -349,6 +349,8 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
                     break;
                 case R.id.fwi_past:
                     //m.showKML(m.getmMap(),0,6);
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www2.dnp.go.th/gis/FDRS/Blog%20Posts/Archive_SEA.php"));
+                    startActivity(browserIntent);
                     break;
             }}else {
             m.removeLayer();
