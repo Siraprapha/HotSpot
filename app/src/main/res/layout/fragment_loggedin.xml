@@ -23,7 +23,7 @@
         android:layout_marginBottom="16dp"/>
 
     <TextView
-        android:id="@+id/username"
+        android:id="@+id/username_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/greeting"
@@ -34,7 +34,7 @@
         android:textColor="#470000"/>
 
     <Button
-        android:id="@+id/logout"
+        android:id="@+id/logout_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"

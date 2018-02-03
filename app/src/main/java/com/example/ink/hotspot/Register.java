@@ -80,7 +80,6 @@ public class Register extends Fragment{
                 if(Validate(Username,Password,Confirm_password,Email)){
                     Log.d(TAG, "onClick: validate true"+Username+Password+Email);
                     userPref.saveRegisterUserInfo(Username,Password,Email);
-
                 }
                 else {
                     Log.d(TAG, "onClick: validate false");

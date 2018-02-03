@@ -3,6 +3,7 @@ package com.example.ink.hotspot;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -241,6 +242,7 @@ public class UserPref {
                             String email = (String) o.get("email");
                             saveResponseStatus(status);
                             Log.d(TAG, "onResponse: status"+status);
+                            Toast.makeText(context,"Register Success",Toast.LENGTH_LONG).show();
                             //Json(url,jsonObject);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -253,7 +255,8 @@ public class UserPref {
                     public void onErrorResponse(VolleyError error) {
                         //clearUserInfo();
                         // error
-                        Log.e(TAG, error.getLocalizedMessage());
+                        error.printStackTrace();
+                        Log.e(TAG, "onErrorResponse "+error.getLocalizedMessage());
                     }
                 }
         ) {

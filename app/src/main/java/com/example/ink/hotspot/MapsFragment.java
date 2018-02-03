@@ -73,17 +73,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     public GoogleMap mMap;
 
-    private CurrentLocation currLocate;
-    LocationManager locationManager;
-    String provider;
-    LatLng myPosition;
-
     private KmlLayer layer;
 
-    boolean mLocationPermissionGranted;
-    FusedLocationProviderClient mFusedLocationProviderClient;
-    public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 123;
-    Location mLastKnownLocation;
     LatLng mDefaultLocation = new LatLng(13.738938, 100.527688);
 
     public static Fragment newInstance() {
@@ -94,10 +85,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Construct a FusedLocationProviderClient.
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity);
-
     }
 
     @Override
@@ -112,7 +99,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         fragmentTransaction.commit();
         mapFragment.getMapAsync(this);
 
-        Toast.makeText(context, "MapsFragment is on stack", Toast.LENGTH_LONG).show();
+//        Toast.makeText(context, "MapsFragment is on stack", Toast.LENGTH_LONG).show();
         return rootview;
     }
 
@@ -133,17 +120,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             return;
         }
         mMap.setMyLocationEnabled(true);
-        /*
-        locationManager = (LocationManager) activity.getSystemService(LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        provider = locationManager.getBestProvider(criteria, true);
-        Location location = locationManager.getLastKnownLocation(provider);
-        LatLng center = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraPosition.Builder cameraPosition = new CameraPosition.Builder();
-        cameraPosition.target(center);
-        cameraPosition.zoom(DEFAULT_ZOOM);
-        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition.build()));*/
-
         //currLocate = new CurrentLocation(mMap,activity);
         //String url = "http://tatam.esy.es/api.php?key=map";
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,DEFAULT_ZOOM));
@@ -226,7 +202,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
         else{
             Log.e("Json", "URL not found.");
-            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
+//            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
         }
 
 
@@ -263,7 +239,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             e.printStackTrace();
                         }
                         Log.e("Json", "Finish mark json");
-                        Toast.makeText(context,"Finish mark json",Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(context,"Finish mark json",Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -322,7 +298,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             //Toast.makeText(getContext(),"ไม่พบข้อมูล"+layer.getContainers().toString(),Toast.LENGTH_SHORT).show();
             if(layer==null)Log.e("Context", "showKML: Context is notnull"+context);
             Log.e("KML", "showKML: already");
-            Toast.makeText(context,"finish show KML",Toast.LENGTH_SHORT).show();
+//            Toast.makeText(context,"finish show KML",Toast.LENGTH_SHORT).show();
             //movecamera
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();

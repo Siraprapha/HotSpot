@@ -116,53 +116,61 @@ public class Login extends Fragment {
         //onClicklogin
         button_login.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                String username = fill_username.getText().toString().trim();
-                String password = fill_password.getText().toString().trim();
-                if(Objects.equals(username, "") || Objects.equals(password, "")){
-                    ShowDialog("กรุณาใส่ชื่อผู้ใช้หรือรหัส");
-                }
-                else{
-                    userPref.saveLoginUserInfo(username,password);
-                    String status = userPref.getResponseStatus();
-                    Log.e(TAG, "onClick: "+status);
-                    /*switch(status){
-                        case "200": {
-                            loginListener.onLoginSuccess(userPref.getUserInfo("login_name"));
-                            Toast.makeText(getApplicationContext(),"login success",Toast.LENGTH_LONG).show();
-                        }
-                        case "invalid query row < 1 or >1": {
-                            ShowDialog("ชื่อผู้ใช้หรือรหัสไม่ถูกต้อง กรุณาสมัครสมาชิก");
-                            userPref.clearUserInfo();
-                        }
-                        case "\"error query":{
-                            ShowDialog("กรุณาลองใหม่อีกครั้ง");
-                        }
-                        default:
-                            Log.e(TAG, "onClick: button_login ResponseStatus == null");
-                    }*/
-                }
-                //validate
+            public void onClick(View view) {user_login();
             }
         });
+
         //onClickregister
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Fragment fragment = Register.newInstance();
-                // Insert the fragment by replacing any existing fragment
-                FragmentManager fragmentManager = getFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.map, fragment).commit();
+                user_register();
             }
         });
+
         //onClickfacebook
         /*
         permissions = Arrays.asList("public_profile","email");
         loginButton = rootview.findViewById(R.id.login_button_fb);
         FacebookLoginButton();*/
 
-        Toast.makeText(context,"Login is on stack",Toast.LENGTH_LONG).show();
+//        Toast.makeText(context,"Login is on stack",Toast.LENGTH_LONG).show();
         return rootview;
+    }
+
+    public void user_login(){
+        String username = fill_username.getText().toString().trim();
+        String password = fill_password.getText().toString().trim();
+        if(Objects.equals(username, "") || Objects.equals(password, "")){
+            ShowDialog("กรุณาใส่ชื่อผู้ใช้หรือรหัส");
+        }
+        else{
+            userPref.saveLoginUserInfo(username,password);
+            String status = userPref.getResponseStatus();
+            Log.e(TAG, "onClick: "+status);
+            switch(status){
+                case "200": {
+                    loginListener.onLoginSuccess(userPref.getUserInfo("login_name"));
+                    Toast.makeText(getApplicationContext(),"login success",Toast.LENGTH_LONG).show();
+                }
+                case "invalid query row < 1 or >1": {
+                    ShowDialog("ชื่อผู้ใช้หรือรหัสไม่ถูกต้อง กรุณาสมัครสมาชิก");
+                    userPref.clearUserInfo();
+                }
+                case "\"error query":{
+                    ShowDialog("กรุณาลองใหม่อีกครั้ง");
+                }
+                default:
+                    Log.e(TAG, "onClick: button_login ResponseStatus == null");
+            }
+        }
+    }
+
+    public void user_register(){
+        Fragment fragment = Register.newInstance();
+        // Insert the fragment by replacing any existing fragment
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.map, fragment).commit();
     }
     /*
     private void FacebookLoginButton(){
@@ -320,8 +328,7 @@ public class Login extends Fragment {
         builder.setMessage(message);
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(getContext(),
-                        "...", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getContext(), "...", Toast.LENGTH_SHORT).show();
             }
         });
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {

@@ -54,7 +54,6 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     MenuInflater inflater_ffmc;
     PopupMenu popup_fwi;
     MenuInflater inflater_fwi;
-    int popup_item_position;
     MenuItem last_item;
 
     Fragment current_fragment;
@@ -68,7 +67,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     public final Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            Toast.makeText(MapsActivity.this, "Refresh ", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MapsActivity.this, "Refresh ", Toast.LENGTH_SHORT).show();
             if (mapsFragment instanceof MapsFragment) {
                 String url = "http://tatam.esy.es/test/querytestmodule.php?key=maprealtime";
                 ((MapsFragment)mapsFragment).CallJsonHotSpot(((MapsFragment)mapsFragment).getmMap(), url);
