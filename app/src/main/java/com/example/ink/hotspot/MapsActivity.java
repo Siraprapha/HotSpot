@@ -1,5 +1,7 @@
 package com.example.ink.hotspot;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.v4.widget.ImageViewCompat;
 import android.view.ContextMenu;
@@ -280,11 +282,13 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         }
     }
     public PopupMenu setPopUpMenu(PopupMenu popup){
-        popup.getMenu().getItem(0).setTitle(getDate(-2));
-        popup.getMenu().getItem(1).setTitle(getDate(-1));
-        popup.getMenu().getItem(2).setTitle(getDate(0)+" (วันนี้)");
-        popup.getMenu().getItem(3).setTitle(getDate(1));
-        popup.getMenu().getItem(4).setTitle(getDate(2));
+        popup.getMenu().getItem(0).setTitle(getDate(0)+" (วันนี้)");
+        popup.getMenu().getItem(1).setTitle(getDate(1));
+        popup.getMenu().getItem(2).setTitle(getDate(2));
+        popup.getMenu().getItem(3).setTitle(getDate(3));
+        popup.getMenu().getItem(4).setTitle(getDate(4));
+        popup.getMenu().getItem(5).setTitle(getDate(5));
+        popup.getMenu().getItem(6).setTitle("ดูข้อมูลย้อนหลัง...");
         return popup;
     }
     public void setPopUpMenuItem(PopupMenu popup,int item_index){
@@ -294,20 +298,28 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         MapsFragment m = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if(checked){
         switch (item.getItemId()){
-            case R.id.ffmc_2p:
+            case R.id.ffmc_0:
                 m.showKML(m.getmMap(),0,1);
                 break;
-            case R.id.ffmc_1p:
+            case R.id.ffmc_1:
                 m.showKML(m.getmMap(),0,2);
                 break;
-            case R.id.ffmc_0:
+            case R.id.ffmc_2:
                 m.showKML(m.getmMap(),0,3);
                 break;
-            case R.id.ffmc_1f:
+            case R.id.ffmc_3:
                 m.showKML(m.getmMap(),0,4);
                 break;
-            case R.id.ffmc_2f:
+            case R.id.ffmc_4:
                 m.showKML(m.getmMap(),0,5);
+                break;
+            case R.id.ffmc_5:
+                m.showKML(m.getmMap(),0,6); //wait for tam
+                break;
+            case R.id.ffmc_past:
+                //m.showKML(m.getmMap(),0,6);
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www2.dnp.go.th/gis/FDRS/Blog%20Posts/Archive_SEA.php"));
+                startActivity(browserIntent);
                 break;
         }}else {
             m.removeLayer();
@@ -317,20 +329,26 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         MapsFragment m = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if(checked){
             switch (item.getItemId()){
-                case R.id.fwi_2p:
+                case R.id.fwi_0:
                     m.showKML(m.getmMap(),1,1);
                     break;
-                case R.id.fwi_1p:
+                case R.id.fwi_1:
                     m.showKML(m.getmMap(),1,2);
                     break;
-                case R.id.fwi_0:
+                case R.id.fwi_2:
                     m.showKML(m.getmMap(),1,3);
                     break;
-                case R.id.fwi_1f:
+                case R.id.fwi_3:
                     m.showKML(m.getmMap(),1,4);
                     break;
-                case R.id.fwi_2f:
+                case R.id.fwi_4:
                     m.showKML(m.getmMap(),1,5);
+                    break;
+                case R.id.fwi_5:
+                    m.showKML(m.getmMap(),0,6); //wait for tam
+                    break;
+                case R.id.fwi_past:
+                    //m.showKML(m.getmMap(),0,6);
                     break;
             }}else {
             m.removeLayer();
@@ -380,7 +398,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         DateFormat dateformat = new SimpleDateFormat("dd-MM-yyyy");
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR,day);
-        Log.e(TAG, "showPopUpMenu: Current Date"+dateformat.format(cal.getTime()) );
+        //Log.e(TAG, "showPopUpMenu: Current Date"+dateformat.format(cal.getTime()) );
         return dateformat.format(cal.getTime());
     }
 

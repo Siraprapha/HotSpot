@@ -63,7 +63,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     private static final String KEY_CAMERA_POSITION = "camera_position";
     private static final String KEY_LOCATION = "location";
-    private static final int DEFAULT_ZOOM = 5;
+    private static final int DEFAULT_ZOOM = 10;
 
     private static final String TAG = "MapsFragment";
 
@@ -207,7 +207,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 
     }
-
     public void CallJsonHotSpot(GoogleMap googleMap,String url){
         mMap = googleMap;
         //mMap.clear();
@@ -270,25 +269,28 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             //Toast.makeText(context,"start show KML",Toast.LENGTH_SHORT).show();
             if(key==0){
                 switch (day){
-                    case 1:layer = new KmlLayer(mMap, R.raw.ffmc_past_2, context);break;
-                    case 2:layer = new KmlLayer(mMap, R.raw.ffmc_past_1, context);break;
-                    case 3:layer = new KmlLayer(mMap, R.raw.ffmc, context);break;
-                    case 4:layer = new KmlLayer(mMap, R.raw.ffmc_future_1, context);break;
-                    case 5:layer = new KmlLayer(mMap, R.raw.ffmc_future_2, context);break;
+                    case 1:layer = new KmlLayer(mMap, R.raw.ffmc_0, context);break;
+                    case 2:layer = new KmlLayer(mMap, R.raw.ffmc_1, context);break;
+                    case 3:layer = new KmlLayer(mMap, R.raw.ffmc_2, context);break;
+                    case 4:layer = new KmlLayer(mMap, R.raw.ffmc_3, context);break;
+                    case 5:layer = new KmlLayer(mMap, R.raw.ffmc_4, context);break;
+                    case 6:layer = new KmlLayer(mMap, R.raw.ffmc_5, context);break;
                     default:layer = new KmlLayer(mMap, R.raw.ffmc, context);break;
                 }
                 //FFMC
                 //KmlLayer layer = new KmlLayer(mMap, kmlInputStream, getApplicationContext());
                 //layer = new KmlLayer(mMap, R.raw.ffmc, context);
+
                 layer.addLayerToMap();
             }
             else{
                 switch (day){
-                    case 1:layer = new KmlLayer(mMap, R.raw.fwi_past_2, context);break;
-                    case 2:layer = new KmlLayer(mMap, R.raw.fwi_past_1, context);break;
-                    case 3:layer = new KmlLayer(mMap, R.raw.fwi, context);break;
-                    case 4:layer = new KmlLayer(mMap, R.raw.fwi_future_1, context);break;
-                    case 5:layer = new KmlLayer(mMap, R.raw.fwi_future_2, context);break;
+                    case 1:layer = new KmlLayer(mMap, R.raw.fwi_0, context);break;
+                    case 2:layer = new KmlLayer(mMap, R.raw.fwi_1, context);break;
+                    case 3:layer = new KmlLayer(mMap, R.raw.fwi_2, context);break;
+                    case 4:layer = new KmlLayer(mMap, R.raw.fwi_3, context);break;
+                    case 5:layer = new KmlLayer(mMap, R.raw.fwi_4, context);break;
+                    case 6:layer = new KmlLayer(mMap, R.raw.fwi_5, context);break;
                     default:layer = new KmlLayer(mMap, R.raw.fwi, context);break;
                 }
                 //FWI
