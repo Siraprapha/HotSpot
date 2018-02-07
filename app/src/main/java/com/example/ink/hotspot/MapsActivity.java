@@ -72,9 +72,9 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
 //            Toast.makeText(MapsActivity.this, "Refresh ", Toast.LENGTH_SHORT).show();
             if (mapsFragment instanceof MapsFragment) {
                 String url = "http://tatam.esy.es/test/api.php?key=maprealtime";
-                ((MapsFragment)mapsFragment).CallJsonHotSpot(((MapsFragment)mapsFragment).getmMap(), url);
+                //((MapsFragment)mapsFragment).CallJsonHotSpot(((MapsFragment)mapsFragment).getmMap(), url);
             }
-            handler.postDelayed(runnable,60000);
+            //handler.postDelayed(runnable,60000);
         }
     };
 
@@ -97,8 +97,8 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
             mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
-        handler = new Handler();
-        handler.postDelayed(runnable, 60000);
+        //handler = new Handler();
+        //handler.postDelayed(runnable, 60000);
 
     }
 
@@ -194,25 +194,28 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
                 }
                 break;
             case R.id.fwi:
-                //mapsFragment.showKML(mMap,1);
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
                 if (current_fragment instanceof MapsFragment) {
                     //((MapsFragment) current_fragment).showKML(((MapsFragment) current_fragment).getmMap(),1,3);
                     showPopUpMenu(1);
                 }
                 break;
-            case R.id.st_forest:
-                //mapsFragment.caseJson(0);
+            case R.id.pm10:
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
                 if (current_fragment instanceof MapsFragment) {
-                    ((MapsFragment) current_fragment).caseJson(0);
+                    ((MapsFragment) current_fragment).onCallJson(2);
+                }
+                break;
+            case R.id.st_forest:
+                current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (current_fragment instanceof MapsFragment) {
+                    ((MapsFragment) current_fragment).onCallJson(0);
                 }
                 break;
             case R.id.st_wilds:
-                //mapsFragment.caseJson(1);
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
                 if (current_fragment instanceof MapsFragment) {
-                    ((MapsFragment) current_fragment).caseJson(1);
+                    ((MapsFragment) current_fragment).onCallJson(1);
                 }
                 break;
             case R.id.call:
@@ -228,6 +231,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
             default:
                 fragment = null;
         }
+
         // Close the navigation drawer
         mDrawer.closeDrawers();
     }
@@ -239,6 +243,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         }
         return super.onOptionsItemSelected(item);
     }
+
 
     //Popup Menu
     public void showPopUpMenu(int KML_KEY){

@@ -6,6 +6,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -19,9 +21,12 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -36,9 +41,11 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -52,6 +59,9 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -61,9 +71,7 @@ import static android.content.Context.LOCATION_SERVICE;
  */
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String KEY_LOCATION = "location";
-    private static final int DEFAULT_ZOOM = 10;
+    private static final int DEFAULT_ZOOM = 7;
 
     private static final String TAG = "MapsFragment";
 
@@ -76,6 +84,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private KmlLayer layer;
 
     LatLng mDefaultLocation = new LatLng(13.738938, 100.527688);
+
+    ArrayList<Marker> markers_forest;
+    ArrayList<Marker> markers_wild;
+    ArrayList<Marker> markers_pm10;
+    public static boolean isForestonMap=false,isWildonMap=false,isPM10onMap=false;
 
     public static Fragment newInstance() {
         MapsFragment m = new MapsFragment();
@@ -121,11 +134,60 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
         mMap.setMyLocationEnabled(true);
         //currLocate = new CurrentLocation(mMap,activity);
-        //String url = "http://tatam.esy.es/api.php?key=map";
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,DEFAULT_ZOOM));
-        String url = "http://tatam.esy.es/test/api.php?key=maprealtime";
+        String url = "http://tatam.esy.es/api.php?key=map";
+        //String url = "http://tatam.esy.es/test/api.php?key=maprealtime";
         CallJsonHotSpot(mMap, url);
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                return false;
+            }
+        });
+        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+
+            }
+        });
         //handler.postDelayed(runnable, 10000);
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+            @Override
+            public View getInfoWindow(Marker marker) {
+                return null;
+            }
+            @Override
+            public View getInfoContents(Marker marker) {
+                LinearLayout info = new LinearLayout(context);
+                info.setOrientation(LinearLayout.VERTICAL);
+
+                TextView title = new TextView(context);
+                title.setTextColor(Color.BLACK);
+                title.setGravity(Gravity.CENTER);
+                title.setTypeface(null, Typeface.BOLD);
+                title.setText(marker.getTitle());
+
+                TextView snippet = new TextView(context);
+                snippet.setTextColor(Color.BLACK);
+                snippet.setText(marker.getSnippet());
+
+                info.addView(title);
+                info.addView(snippet);
+
+                return info;
+            }
+        });
     }
 
     @Override
@@ -137,53 +199,128 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         return mMap;
     }
 
-    //Marker From JSON
-    public void caseJson(int key){
-        String url;
-        switch (key){
-            case 0: {    //forest station
-                url = "http://tatam.esy.es/api.php?key=station&sub=forest";
-                CallJsonStation(mMap,url);
-                break;
-            }
-            case 1: {    //wild station
-                url = "http://tatam.esy.es/api.php?key=station&sub=wild";
-                //url = "http://tatam.esy.es/getair4thai.php";
-                CallJsonStation(mMap,url);
-                break;
-            }
-            default: url = "";
+    //JSON: station = forest, wild, pm10
+    public void removeMarker(ArrayList<Marker> h){
+        Log.e(TAG, "removeMarker: "+h.size() );
+        Log.e(TAG, "removeMarker: "+h.toString() );
+        for(int i=0;i<h.size();i++){
+            Marker m = h.get(i);
+            m.remove();
+            //m.setVisible(false);
         }
-
+        h.clear();
+        Log.e(TAG, "removeMarker: finished "+h.size() );
     }
-    public void CallJsonStation(GoogleMap googleMap,String url){
+    //on click item
+    public void onCallJson(int key){
+        switch (key){
+            case 0:{
+                if(!isForestonMap){
+                    CallJsonForest(mMap);
+                    isForestonMap = true;
+                }else {
+                    removeMarker(markers_forest);
+                    isForestonMap = false;
+                }
+                break;
+            }
+            case 1:{
+                if(!isWildonMap){
+                    CallJsonWild((mMap));
+                    isWildonMap = true;
+                }else {
+                    removeMarker(markers_wild);
+                    isWildonMap = false;
+                }
+                break;
+            }
+            case 2:{
+                if(!isPM10onMap){
+                    CallJsonPM10(mMap);
+                    isPM10onMap = true;
+                }else {
+                    removeMarker(markers_pm10);
+                    isPM10onMap = false;
+                }
+                break;
+            }
+        }
+    }
+    //Marker From JSON: hot spot
+    public void CallJsonHotSpot(GoogleMap googleMap,String url){
         mMap = googleMap;
         //mMap.clear();
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("test",response.toString());
+                        try {
+                            JSONArray arr = response.getJSONArray("posts");
+                            for(int i=0;i<arr.length();i++){
+                                JSONObject o = arr.getJSONObject(i);
+                                JSONObject datares = o.getJSONObject(Integer.toString(i+1));
+                                double lat =  Double.parseDouble((String)datares.get("latitude"));
+                                double lng =  Double.parseDouble((String)datares.get("longitude"));
+                                String sat = (String)datares.get("satellite");
+                                String date = (String)datares.get("acq_date");
+                                String time = (String)datares.get("acq_time");
+
+                                mMap.addMarker(new MarkerOptions()
+                                        .position(new LatLng(lat,lng))
+                                        .title("พิกัดไฟป่า")
+                                        .snippet("ดาวเทียม: "+sat+"\nวันและเวลา: "+date+" "+time+"\nตำแหน่ง: "+lat+", "+lng)
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame16)));
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Log.e("Json", "Finish mark json");
+//                        Toast.makeText(context,"Finish mark json",Toast.LENGTH_SHORT).show();
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO Auto-generated method stub
+                        Log.e("Json", "Error on"+error);
+                    }
+                });
+// Access the RequestQueue through your singleton class.
+        MySingleton.getInstance(context).addToRequestQueue(jsObjRequest);
+    }
+    //call json : forest, wild, pm10
+    public void CallJsonForest(GoogleMap googleMap){
+        mMap = googleMap;
+        String url = "http://tatam.esy.es/api.php?key=station&sub=forest";
         if (!url.equals("")){
             JsonObjectRequest jsObjRequest = new JsonObjectRequest
                     (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
-                            Log.d("test",response.toString());
-
                             try {
+                                Log.d("test", response.toString());
                                 JSONArray arr = response.getJSONArray("posts");
-                                double lat;
-                                double lng;
+                                Log.e(TAG, "rootJsonStation: array length"+arr.length() );
+
+                                markers_forest = new ArrayList<>();
+
                                 for(int i=0;i<arr.length();i++){
+
                                     JSONObject o = arr.getJSONObject(i);
                                     JSONObject datares = o.getJSONObject(Integer.toString(i+1));
-                                    String name = (String) datares.get("name");
-                                    lat =  Double.parseDouble((String)datares.get("latitude"));
-                                    lng =  Double.parseDouble((String)datares.get("longitude"));
-//                                    lat =  (double)datares.get("latitude");
-//                                    lng =  (double)datares.get("longitude");
-                                    mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng))
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.placeholder)));
 
+                                    MarkerOptions markerOptions = new MarkerOptions()
+                                            .position(new LatLng(Double.parseDouble((String)datares.get("latitude"))
+                                                    ,Double.parseDouble((String)datares.get("longitude"))))
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.home_alert))
+                                            .title((String) datares.get("name"));
+
+                                    Marker marker = mMap.addMarker(markerOptions);
+
+                                    markers_forest.add(marker);
+                                    Log.e(TAG, "addMarkersStation: "+markers_forest.size() );
+                                    Log.e(TAG, "addMarkersStation: "+ Arrays.toString(markers_forest.toArray()));
                                 }
-                                //move camera to the last lat,lng marker
-                                //mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -204,53 +341,120 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             Log.e("Json", "URL not found.");
 //            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
         }
-
-
     }
-    public void CallJsonHotSpot(GoogleMap googleMap,String url){
+    public void CallJsonWild(GoogleMap googleMap){
         mMap = googleMap;
-        //mMap.clear();
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+        String url = "http://tatam.esy.es/api.php?key=station&sub=wild";
+        if (!url.equals("")){
+            JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                    (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                Log.d("test", response.toString());
+                                JSONArray arr = response.getJSONArray("posts");
+                                Log.e(TAG, "rootJsonStation: array length"+arr.length() );
+
+                                markers_wild = new ArrayList<>();
+
+                                for(int i=0;i<arr.length();i++){
+
+                                    JSONObject o = arr.getJSONObject(i);
+                                    JSONObject datares = o.getJSONObject(Integer.toString(i+1));
+
+                                    MarkerOptions markerOptions = new MarkerOptions()
+                                            .position(new LatLng(Double.parseDouble((String)datares.get("latitude"))
+                                                    ,Double.parseDouble((String)datares.get("longitude"))))
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.home_alert))
+                                            .title((String) datares.get("name"));
+
+                                    Marker marker = mMap.addMarker(markerOptions);
+
+                                    markers_wild.add(marker);
+                                    Log.e(TAG, "addMarkersStation: "+markers_wild.size() );
+                                    Log.e(TAG, "addMarkersStation: "+ Arrays.toString(markers_wild.toArray()));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Log.e("Json", "Finish mark json");
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // TODO Auto-generated method stub
+                            Log.e("Json", "Error on"+error.getLocalizedMessage());
+                        }
+                    });
+// Access the RequestQueue through your singleton class.
+            MySingleton.getInstance(context).addToRequestQueue(jsObjRequest);
+        }
+        else{
+            Log.e("Json", "URL not found.");
+//            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
+        }
+    }
+    public void CallJsonPM10(GoogleMap googleMap){
+        mMap = googleMap;
+        String url = "http://tatam.esy.es/getair4thai.php";
+        if (!url.equals("")){
+            JsonObjectRequest jsObjRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("test",response.toString());
-
                         try {
+                            Log.d("test", response.toString());
                             JSONArray arr = response.getJSONArray("posts");
-                            double lat;
-                            double lng;
+                            Log.e(TAG, "rootJsonStation: array length"+arr.length() );
+
+                            markers_pm10 = new ArrayList<>();
+
                             for(int i=0;i<arr.length();i++){
-                                JSONObject o = arr.getJSONObject(i);
-                                JSONObject datares = o.getJSONObject(Integer.toString(i+1));
-                                lat =  Double.parseDouble((String)datares.get("latitude"));
-                                lng =  Double.parseDouble((String)datares.get("longitude"));
-//                                    lat =  (double)datares.get("latitude");
-//                                    lng =  (double)datares.get("longitude");
-                                Log.e(TAG, "onResponse: lat "+lat+"   long "+lng+"\n");
-                                mMap.addMarker(new MarkerOptions().position(new LatLng(lat,lng))
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame)));
-                                //String name = datares.get("name").toString();
+
+                                JSONObject datares = arr.getJSONObject(i);
+
+                                String nameTH = (String) datares.get("nameTH");
+                                String areaTH = (String) datares.get("areaTH");
+                                double lat = Double.parseDouble((String) datares.get("lat"));
+                                double lng = Double.parseDouble((String) datares.get("lng"));
+                                String date = (String) datares.get("date");
+                                String time = (String) datares.get("time");
+                                String pm10 = (String) datares.get("pm10");
+                                String unit = (String) datares.get("unit");
+
+                                MarkerOptions markerOptions = new MarkerOptions()
+                                        .position(new LatLng(lat,lng))
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot_and_circle))
+                                        .title("ค่าฝุ่นละอองในอากาศ PM10: "+pm10+" "+unit)
+                                        .draggable(true)
+                                        .snippet("สถานี: "+nameTH+"\n "+areaTH+"\nวันที่: "+date+" เวลา: "+time);
+
+                                Marker marker = mMap.addMarker(markerOptions);
+
+                                markers_pm10.add(marker);
+
+                                Log.e(TAG, "addMarkersStation: "+markers_pm10.size() );
+                                Log.e(TAG, "addMarkersStation: "+ Arrays.toString(markers_pm10.toArray()));
                             }
-                            //move camera to the last lat,lng marker
-                            //mMap.moveCamera(CameraUpdateFactory.newLatLng(currLocate.getCurrLatLng()));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                         Log.e("Json", "Finish mark json");
-//                        Toast.makeText(context,"Finish mark json",Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        Log.e("Json", "Error on"+error);
-                    }
-                });
-
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // TODO Auto-generated method stub
+                            Log.e("Json", "Error on"+error.getLocalizedMessage());
+                        }
+                    });
 // Access the RequestQueue through your singleton class.
-        MySingleton.getInstance(context).addToRequestQueue(jsObjRequest);
-
+            MySingleton.getInstance(context).addToRequestQueue(jsObjRequest);
+        }
+        else{
+            Log.e("Json", "URL not found.");
+//            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
+        }
     }
 
     //KML
@@ -311,6 +515,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             layer.removeLayerFromMap();
         }
     }
+
+
 
     @Override
     public void onAttach(Context context) {

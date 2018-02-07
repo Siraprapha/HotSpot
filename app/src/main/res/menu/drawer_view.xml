@@ -1,24 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/home"
         android:icon="@mipmap/ic_home_black_24dp"
         android:title="@string/home" />
-    <item android:title="@string/kmz">
+    <item android:title="@string/moreinfo">
         <menu>
             <group
-                android:id="@+id/group_kmz"
-                android:checkableBehavior="single" >
+                android:id="@+id/group_kmz" >
                 <item
                     android:id="@+id/ffmc"
-                    android:title="FFMC"
-                    android:icon="@drawable/plus"/>
+                    android:title="พื้นที่ที่ไฟติดยาก/ง่าย"
+                    android:icon="@drawable/plus"
+                    android:checkable="true"/>
                 <item
                     android:id="@+id/fwi"
-                    android:title="FWI"
-                    android:icon="@drawable/plus">
-                </item>
+                    android:title="พื้นที่ที่ไฟลุกลามยาก/ง่าย"
+                    android:icon="@drawable/plus"
+                    android:checkable="true" />
+                <item
+                    android:id="@+id/pm10"
+                    android:title="ปริมาณฝุ่นละอองในอากาศ"
+                    android:icon="@drawable/plus"
+                    android:checkable="true" />
             </group>
         </menu>
     </item>
@@ -27,22 +33,25 @@
         <menu>
             <group
                 android:id="@+id/group_station"
-                android:checkableBehavior="single">
+                android:checkableBehavior="all">
                 <item
                     android:id="@+id/st_forest"
-                    android:title="@string/st_forest"/>
+                    android:title="@string/st_forest"
+                    android:checkable="true"/>
                 <item
                     android:id="@+id/st_wilds"
-                    android:title="@string/st_wilds"/>
+                    android:title="@string/st_wilds"
+                    android:checkable="true"/>
             </group>
         </menu>
     </item>
     <item
         android:id="@+id/call"
-        android:title="@string/emergency"/>
+        android:title="@string/emergency"
+        android:icon="@drawable/phone" />
     <item
         android:id="@+id/about"
-        android:title="@string/about" />
-
+        android:title="@string/about"
+        android:icon="@drawable/information_outline"/>
 
 </menu>

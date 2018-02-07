@@ -23,9 +23,9 @@
     <string name="login_logout">บัญชี</string>
     <string name="about">เกี่ยวกับเรา</string>
     <string name="st_wilds">สถานีควบคุมไฟป่า</string>
-    <string name="st_forest">ศูนย์/หน่วยส่งเสริมการควบคุมไฟป่า</string>
+    <string name="st_forest">หน่วยส่งเสริมการควบคุมไฟป่า</string>
     <string name="station">ศูนย์ควบคุมไฟป่า</string>
-    <string name="kmz">ดัชนีการลุกลามของไฟ</string>
     <string name="home">หน้าแรก</string>
+    <string name="moreinfo">ข้อมูลเพิ่มเติม</string>
 
 </resources>
