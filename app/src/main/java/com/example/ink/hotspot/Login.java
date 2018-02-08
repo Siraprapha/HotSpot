@@ -289,11 +289,6 @@ public class Login extends Fragment {
         super.onAttach(context);
         this.context = context;
         this.activity = (Activity)context;
-        try {
-            loginListener = (MapsActivity) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException("Must implement LoginListener");
-        }
     }
 
     @Override

@@ -3,12 +3,8 @@ package com.example.ink.hotspot;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
-import android.support.v4.widget.ImageViewCompat;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -22,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,12 +30,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class MapsActivity extends AppCompatActivity implements Login.LoginListener, View.OnClickListener{
-
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String KEY_LOCATION = "location";
-    Location mCurrentLocation;
-    Location mCameraPosition;
+public class MapsActivity extends AppCompatActivity implements View.OnClickListener{
 
     public DrawerLayout mDrawer;
     public Toolbar toolbar;
@@ -93,10 +83,6 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         fragmentTransaction.replace(R.id.map, mapsFragment)
                             .commit();
 
-        if (savedInstanceState != null) {
-            mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
-            mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
-        }
         //handler = new Handler();
         //handler.postDelayed(runnable, 60000);
 
@@ -117,21 +103,6 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         // Inflate the header view at runtime
         //View headerLayout = nvDrawer.inflateHeaderView(R.layout.nav_header);
         header_view = nvDrawer.getHeaderView(0);
-        header_view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Class user_acc = Login.class;
-                Fragment user_acc = Login.newInstance();
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.map,user_acc)
-                        .addToBackStack(null)
-                        .commit();
-                mDrawer.closeDrawers();
-            }
-        });
-        nav_header_circle = header_view.findViewById(R.id.nav_header_circle);
-        nav_header_name = header_view.findViewById(R.id.nav_header_name);
 
         popup_ffmc = new PopupMenu(this,toolbar);
         inflater_ffmc = popup_ffmc.getMenuInflater();
@@ -141,6 +112,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         inflater_fwi.inflate(R.menu.popup_menu_fwi, popup_fwi.getMenu());
 
         kml_color_level = findViewById(R.id.kml_color_level);
+
         // Setup drawer view
         setupDrawerContent(nvDrawer);
     }
@@ -177,15 +149,33 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
     }
     public void selectDrawerItem(MenuItem menuItem) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        boolean IS_POPUP=false;
         Fragment fragment;
         switch (menuItem.getItemId()) {
             case R.id.home:
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
                 if (!(current_fragment instanceof MapsFragment)) {
+                    unCheckItems();
                     getSupportFragmentManager().popBackStack();
                 }
                 mDrawer.openDrawer(GravityCompat.START);
+                break;
+            case R.id.terra:
+                current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (current_fragment instanceof MapsFragment) {
+                    ((MapsFragment) current_fragment).showSat(0);
+                }
+                break;
+            case R.id.aqua:
+                current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (current_fragment instanceof MapsFragment) {
+                    ((MapsFragment) current_fragment).showSat(1);
+                }
+                break;
+            case R.id.sumi:
+                current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (current_fragment instanceof MapsFragment) {
+                    ((MapsFragment) current_fragment).showSat(2);
+                }
                 break;
             case R.id.ffmc:
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
@@ -219,6 +209,8 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
                 }
                 break;
             case R.id.call:
+                kml_color_level.setVisibility(View.GONE);
+
                 fragment = UserCall.newInstance();
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 fragmentTransaction.replace(R.id.map, fragment)
@@ -243,7 +235,6 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         }
         return super.onOptionsItemSelected(item);
     }
-
 
     //Popup Menu
     public void showPopUpMenu(int KML_KEY){
@@ -296,77 +287,83 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         popup.getMenu().getItem(6).setTitle("ดูข้อมูลย้อนหลัง...");
         return popup;
     }
-    public void setPopUpMenuItem(PopupMenu popup,int item_index){
-        popup.getMenu().getItem(item_index).setTitle(getDate(item_index-2));
-    }
     public void onClickDays_ffmc(MenuItem item,boolean checked){
         MapsFragment m = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if(checked){
-        switch (item.getItemId()){
-            case R.id.ffmc_0:
-                m.showKML(m.getmMap(),0,1);
-                break;
-            case R.id.ffmc_1:
-                m.showKML(m.getmMap(),0,2);
-                break;
-            case R.id.ffmc_2:
-                m.showKML(m.getmMap(),0,3);
-                break;
-            case R.id.ffmc_3:
-                m.showKML(m.getmMap(),0,4);
-                break;
-            case R.id.ffmc_4:
-                m.showKML(m.getmMap(),0,5);
-                break;
-            case R.id.ffmc_5:
-                m.showKML(m.getmMap(),0,6); //wait for tam
-                break;
-            case R.id.ffmc_past:
-                //m.showKML(m.getmMap(),0,6);
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www2.dnp.go.th/gis/FDRS/Blog%20Posts/Archive_SEA.php"));
-                startActivity(browserIntent);
-                break;
-        }}else {
+            kml_color_level.setVisibility(View.VISIBLE);
+            switch (item.getItemId()){
+                case R.id.ffmc_0:
+                    m.showKML(0,1);
+                    break;
+                case R.id.ffmc_1:
+                    m.showKML(0,2);
+                    break;
+                case R.id.ffmc_2:
+                    m.showKML(0,3);
+                    break;
+                case R.id.ffmc_3:
+                    m.showKML(0,4);
+                    break;
+                case R.id.ffmc_4:
+                    m.showKML(0,5);
+                    break;
+                case R.id.ffmc_5:
+                    m.showKML(0,6); //wait for tam
+                    break;
+                case R.id.ffmc_past:
+                    //m.showKML(m.getmMap(),0,6);
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www2.dnp.go.th/gis/FDRS/Blog%20Posts/Archive_SEA.php"));
+                    startActivity(browserIntent);
+                    break;
+            }
+        }else {
+            kml_color_level.setVisibility(View.GONE);
             m.removeLayer();
         }
     }
     public void onClickDays_fwi(MenuItem item,boolean checked){
         MapsFragment m = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if(checked){
+            kml_color_level.setVisibility(View.VISIBLE);
             switch (item.getItemId()){
                 case R.id.fwi_0:
-                    m.showKML(m.getmMap(),1,1);
+                    m.showKML(1,1);
                     break;
                 case R.id.fwi_1:
-                    m.showKML(m.getmMap(),1,2);
+                    m.showKML(1,2);
                     break;
                 case R.id.fwi_2:
-                    m.showKML(m.getmMap(),1,3);
+                    m.showKML(1,3);
                     break;
                 case R.id.fwi_3:
-                    m.showKML(m.getmMap(),1,4);
+                    m.showKML(1,4);
                     break;
                 case R.id.fwi_4:
-                    m.showKML(m.getmMap(),1,5);
+                    m.showKML(1,5);
                     break;
                 case R.id.fwi_5:
-                    m.showKML(m.getmMap(),0,6); //wait for tam
+                    m.showKML(0,6); //wait for tam
                     break;
                 case R.id.fwi_past:
                     //m.showKML(m.getmMap(),0,6);
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www2.dnp.go.th/gis/FDRS/Blog%20Posts/Archive_SEA.php"));
                     startActivity(browserIntent);
                     break;
-            }}else {
+            }
+        }else {
+            kml_color_level.setVisibility(View.GONE);
             m.removeLayer();
         }
     }
-    public void unCheck(MapsFragment m, MenuItem item){
-        if(!item.isChecked()){
-            item.setChecked(false);
+    public void unCheckItems(){
+        last_item = null;
+        for(int i=0;i<popup_ffmc.getMenu().size();i++){
+            popup_ffmc.getMenu().getItem(i).setChecked(false);
+        }
+        for(int i=0;i<popup_fwi.getMenu().size();i++){
+            popup_fwi.getMenu().getItem(i).setChecked(false);
         }
     }
-
 
     @Override
     public void onClick(View view) {
@@ -377,6 +374,7 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         if(getSupportFragmentManager().getBackStackEntryCount()==0){
             ShowDialogExit();
         }else {
+            unCheckItems();
             super.onBackPressed();
         }
     }
@@ -408,15 +406,5 @@ public class MapsActivity extends AppCompatActivity implements Login.LoginListen
         //Log.e(TAG, "showPopUpMenu: Current Date"+dateformat.format(cal.getTime()) );
         return dateformat.format(cal.getTime());
     }
-
-    //LoginListener
-    @Override
-    public void onLoginSuccess(String username) {
-        Log.e(TAG, "onLoginSuccess: ");
-        nav_header_name.setText(username);
-        nav_header_circle.setText(username.substring(0,1));
-    }
-
-
 
 }

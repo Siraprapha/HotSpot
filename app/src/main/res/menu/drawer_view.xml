@@ -5,7 +5,32 @@
     <item
         android:id="@+id/home"
         android:icon="@mipmap/ic_home_black_24dp"
-        android:title="@string/home" />
+        android:title="@string/home"
+        android:checkable="true" />
+
+    <item android:title="@string/satellite">
+        <menu>
+            <group
+                android:id="@+id/sat" >
+                <item
+                    android:id="@+id/terra"
+                    android:title="Terra"
+                    android:icon="@drawable/satellite_variant"
+                    android:checkable="true" />
+                <item
+                    android:id="@+id/aqua"
+                    android:title="Aqua"
+                    android:icon="@drawable/satellite_variant"
+                    android:checkable="true" />
+                <item
+                    android:id="@+id/sumi"
+                    android:title="Sumi"
+                    android:icon="@drawable/satellite_variant"
+                    android:checkable="true" />
+            </group>
+        </menu>
+    </item>
+
     <item android:title="@string/moreinfo">
         <menu>
             <group
@@ -14,7 +39,7 @@
                     android:id="@+id/ffmc"
                     android:title="พื้นที่ที่ไฟติดยาก/ง่าย"
                     android:icon="@drawable/plus"
-                    android:checkable="true"/>
+                    android:checkable="true" />
                 <item
                     android:id="@+id/fwi"
                     android:title="พื้นที่ที่ไฟลุกลามยาก/ง่าย"
@@ -32,26 +57,29 @@
     <item android:title="@string/station">
         <menu>
             <group
-                android:id="@+id/group_station"
-                android:checkableBehavior="all">
+                android:id="@+id/group_station">
                 <item
                     android:id="@+id/st_forest"
                     android:title="@string/st_forest"
-                    android:checkable="true"/>
+                    android:checkable="true" />
                 <item
                     android:id="@+id/st_wilds"
                     android:title="@string/st_wilds"
-                    android:checkable="true"/>
+                    android:checkable="true" />
             </group>
         </menu>
     </item>
+
     <item
         android:id="@+id/call"
         android:title="@string/emergency"
-        android:icon="@drawable/phone" />
+        android:icon="@drawable/phone"
+        android:checkable="true" />
+
     <item
         android:id="@+id/about"
         android:title="@string/about"
-        android:icon="@drawable/information_outline"/>
+        android:icon="@drawable/information_outline"
+        android:checkable="true" />
 
 </menu>

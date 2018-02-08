@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="100dp"
     android:paddingTop="25dp"
-    android:background="#771e10"
+    android:background="#c30000"
     android:fitsSystemWindows="true"
     app:theme="@style/Theme.AppCompat.NoActionBar"
     app:navigationIcon="@mipmap/ic_menu_white_24dp">

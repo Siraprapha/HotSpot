@@ -71,7 +71,8 @@ import static android.content.Context.LOCATION_SERVICE;
  */
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
-    private static final int DEFAULT_ZOOM = 7;
+    private static final int DEFAULT_ZOOM = 8;
+    private LatLng DEFAULT_LATLNG = new LatLng(18.356,99.475);
 
     private static final String TAG = "MapsFragment";
 
@@ -83,12 +84,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     private KmlLayer layer;
 
-    LatLng mDefaultLocation = new LatLng(13.738938, 100.527688);
+    //LatLng mDefaultLocation = new LatLng(13.738938, 100.527688);
+
+    ArrayList<Marker> sat_terra;
+    ArrayList<Marker> sat_aqua;
+    ArrayList<Marker> sat_sumi;
 
     ArrayList<Marker> markers_forest;
     ArrayList<Marker> markers_wild;
     ArrayList<Marker> markers_pm10;
     public static boolean isForestonMap=false,isWildonMap=false,isPM10onMap=false;
+
+    boolean isLayeronMap = false;
 
     public static Fragment newInstance() {
         MapsFragment m = new MapsFragment();
@@ -117,6 +124,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         Log.e("Inky", "NO ACCESS_FINE_LOCATION fragment");
@@ -134,11 +146,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
         mMap.setMyLocationEnabled(true);
         //currLocate = new CurrentLocation(mMap,activity);
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation,DEFAULT_ZOOM));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG,DEFAULT_ZOOM));
         String url = "http://tatam.esy.es/api.php?key=map";
         //String url = "http://tatam.esy.es/test/api.php?key=maprealtime";
-        CallJsonHotSpot(mMap, url);
+        //showKML();
+        CallJsonHotSpot(url);
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -198,6 +210,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public GoogleMap getmMap(){
         return mMap;
     }
+    public boolean isLayeronMap(){
+        return isLayeronMap;
+    }
 
     //JSON: station = forest, wild, pm10
     public void removeMarker(ArrayList<Marker> h){
@@ -211,12 +226,35 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         h.clear();
         Log.e(TAG, "removeMarker: finished "+h.size() );
     }
+    public void hideMarker(ArrayList<Marker> h){
+        for(int i=0;i<h.size();i++){
+            Marker m = h.get(i);
+            m.setVisible(false);
+        }
+    }
+    public void showMarker(ArrayList<Marker> h){
+        for(int i=0;i<h.size();i++){
+            Marker m = h.get(i);
+            m.setVisible(true);
+        }
+    }
+    public ArrayList<Marker> maxSizeArrayList(ArrayList<Marker> a,ArrayList<Marker> b,ArrayList<Marker> c){
+        if(a.size()> b.size()){
+            if(a.size()> c.size()){
+                return a;
+            }else return c;
+        }else {
+            if(b.size()> c.size()){
+                return b;
+            }else return c;
+        }
+    }
     //on click item
     public void onCallJson(int key){
         switch (key){
             case 0:{
                 if(!isForestonMap){
-                    CallJsonForest(mMap);
+                    CallJsonForest();
                     isForestonMap = true;
                 }else {
                     removeMarker(markers_forest);
@@ -226,7 +264,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             }
             case 1:{
                 if(!isWildonMap){
-                    CallJsonWild((mMap));
+                    CallJsonWild();
                     isWildonMap = true;
                 }else {
                     removeMarker(markers_wild);
@@ -236,7 +274,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             }
             case 2:{
                 if(!isPM10onMap){
-                    CallJsonPM10(mMap);
+                    CallJsonPM10();
                     isPM10onMap = true;
                 }else {
                     removeMarker(markers_pm10);
@@ -247,8 +285,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
     }
     //Marker From JSON: hot spot
-    public void CallJsonHotSpot(GoogleMap googleMap,String url){
-        mMap = googleMap;
+    public void CallJsonHotSpot(String url){
         //mMap.clear();
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
@@ -257,6 +294,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         Log.d("test",response.toString());
                         try {
                             JSONArray arr = response.getJSONArray("posts");
+                            sat_terra = new ArrayList<>();
+                            sat_aqua = new ArrayList<>();
+                            sat_sumi = new ArrayList<>();
                             for(int i=0;i<arr.length();i++){
                                 JSONObject o = arr.getJSONObject(i);
                                 JSONObject datares = o.getJSONObject(Integer.toString(i+1));
@@ -266,12 +306,31 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                                 String date = (String)datares.get("acq_date");
                                 String time = (String)datares.get("acq_time");
 
-                                mMap.addMarker(new MarkerOptions()
+                                Marker m = mMap.addMarker(new MarkerOptions()
                                         .position(new LatLng(lat,lng))
                                         .title("พิกัดไฟป่า")
                                         .snippet("ดาวเทียม: "+sat+"\nวันและเวลา: "+date+" "+time+"\nตำแหน่ง: "+lat+", "+lng)
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame16)));
+                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame16))
+                                        .visible(false));
+
+                                switch (sat) {
+                                    case "Terra":
+                                        sat_terra.add(m);
+                                        break;
+                                    case "Aqua":
+                                        sat_aqua.add(m);
+                                        break;
+                                    default:
+                                        sat_sumi.add(m);
+                                        break;
+                                }
                             }
+                            ArrayList<Marker> t = maxSizeArrayList(sat_aqua,sat_sumi,sat_terra);
+                            if(t==sat_aqua){
+                                showMarker(sat_aqua);
+                            }else if(t==sat_sumi){
+                                showMarker(sat_sumi);
+                            }else showMarker(sat_terra);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -288,9 +347,36 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 // Access the RequestQueue through your singleton class.
         MySingleton.getInstance(context).addToRequestQueue(jsObjRequest);
     }
+    public void showSat(int key){
+        switch (key){
+            case 0:{
+                if(!sat_terra.isEmpty()){
+                    if(sat_terra.get(0).isVisible()){
+                        hideMarker(sat_terra);
+                    }else showMarker(sat_terra);
+                }else Toast.makeText(context,"ไม่พบข้อมูล",Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 1:{
+                if(!sat_aqua.isEmpty()){
+                    if(sat_aqua.get(0).isVisible()){
+                        hideMarker(sat_aqua);
+                    }else showMarker(sat_aqua);
+                }else Toast.makeText(context,"ไม่พบข้อมูล",Toast.LENGTH_LONG).show();
+                break;
+            }
+            case 2:{
+                if(!sat_sumi.isEmpty()){
+                    if(sat_sumi.get(0).isVisible()){
+                        hideMarker(sat_sumi);
+                    }else showMarker(sat_sumi);
+                }else Toast.makeText(context,"ไม่พบข้อมูล",Toast.LENGTH_LONG).show();
+                break;
+            }
+        }
+    }
     //call json : forest, wild, pm10
-    public void CallJsonForest(GoogleMap googleMap){
-        mMap = googleMap;
+    public void CallJsonForest(){
         String url = "http://tatam.esy.es/api.php?key=station&sub=forest";
         if (!url.equals("")){
             JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -342,8 +428,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 //            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
         }
     }
-    public void CallJsonWild(GoogleMap googleMap){
-        mMap = googleMap;
+    public void CallJsonWild(){
         String url = "http://tatam.esy.es/api.php?key=station&sub=wild";
         if (!url.equals("")){
             JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -394,8 +479,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 //            Toast.makeText(context,"URL Not found.",Toast.LENGTH_SHORT).show();
         }
     }
-    public void CallJsonPM10(GoogleMap googleMap){
-        mMap = googleMap;
+    public void CallJsonPM10(){
         String url = "http://tatam.esy.es/getair4thai.php";
         if (!url.equals("")){
             JsonObjectRequest jsObjRequest = new JsonObjectRequest
@@ -458,13 +542,30 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     //KML
-    public void showKML(GoogleMap googleMap,int key,int day){
-        mMap = googleMap;
+    public void showKML(){
         //mMap.clear();
 
         if(layer != null){
             Log.e(TAG, "showKML: layer "+layer.toString());
             layer.removeLayerFromMap();
+            Log.e("showKML", "showKML: layer is not null");
+            Log.e(TAG, "showKML: layer removed "+layer.toString());
+        }
+        try {
+            Log.e("KML", "showKML: ");
+            layer = new KmlLayer(mMap, R.raw.kmltest, context);
+            layer.addLayerToMap();
+        } catch (XmlPullParserException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void showKML(int key,int day){
+        //mMap.clear();
+
+        if(layer != null){
+            Log.e(TAG, "showKML: layer "+layer.toString());
+            layer.removeLayerFromMap();
+            isLayeronMap = false;
             Log.e("showKML", "showKML: layer is not null");
             Log.e(TAG, "showKML: layer removed "+layer.toString());
         }
@@ -486,6 +587,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 //layer = new KmlLayer(mMap, R.raw.ffmc, context);
 
                 layer.addLayerToMap();
+                isLayeronMap = true;
             }
             else{
                 switch (day){
@@ -500,6 +602,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 //FWI
                 //layer = new KmlLayer(mMap, R.raw.fwi, context);
                 layer.addLayerToMap();
+                isLayeronMap = true;
             }
             //Toast.makeText(getContext(),"ไม่พบข้อมูล"+layer.getContainers().toString(),Toast.LENGTH_SHORT).show();
             if(layer==null)Log.e("Context", "showKML: Context is notnull"+context);

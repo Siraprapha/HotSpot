@@ -27,5 +27,6 @@
     <string name="station">ศูนย์ควบคุมไฟป่า</string>
     <string name="home">หน้าแรก</string>
     <string name="moreinfo">ข้อมูลเพิ่มเติม</string>
+    <string name="satellite">ดาวเทียม</string>
 
 </resources>
