@@ -1,17 +1,22 @@
 package com.example.ink.hotspot;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class UserCall extends Fragment {
 
@@ -57,8 +62,14 @@ public class UserCall extends Fragment {
         builder.setMessage("คุณต้องการโทรด่วน?");
         builder.setPositiveButton("โทร", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Intent phone_call = new Intent(Intent.ACTION_CALL, Uri.parse("tel:1362"));
-                startActivity(phone_call);
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CALL_PHONE},1);
+                }
+                else
+                {
+                    Intent phone_call = new Intent(Intent.ACTION_CALL, Uri.parse("tel:1362"));
+                    startActivity(phone_call);
+                }
             }
         });
         builder.setNegativeButton("ไว้ก่อน", new DialogInterface.OnClickListener() {
@@ -68,6 +79,29 @@ public class UserCall extends Fragment {
             }
         });
         builder.show();
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.checkSelfPermission(context,
+                            Manifest.permission.CALL_PHONE)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                    }
+                } else {
+                    Toast.makeText(context, "permission denied", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+
     }
 
     @Override

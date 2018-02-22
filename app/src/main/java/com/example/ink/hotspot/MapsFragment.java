@@ -83,7 +83,6 @@ import java.util.concurrent.Executor;
 
 import static android.content.Context.LOCATION_SERVICE;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -176,15 +175,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         Log.e("Inky", "NO ACCESS_FINE_LOCATION fragment");
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(120000); // two minute interval
+        mLocationRequest.setFastestInterval(120000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Log.e(TAG, "onMapReady:new app version: " + Build.VERSION_CODES.M + " device version: " + android.os.Build.VERSION.SDK_INT);
 
-            if (ContextCompat.checkSelfPermission(context,
+            if (ActivityCompat.checkSelfPermission(context,
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(context,
+                    || ActivityCompat.checkSelfPermission(context,
                     Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                Log.e(TAG, "onMapReady:>23 permission true");
+                Log.e(TAG, "onMapReady:>23 permission true "+PackageManager.PERMISSION_GRANTED);
                 //Location Permission already granted
                 mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                 mMap.setMyLocationEnabled(true);
@@ -207,9 +210,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
             }
         } else {
             Log.e(TAG, "onMapReady:old app version: " + Build.VERSION_CODES.M + " device version: " + android.os.Build.VERSION.SDK_INT);
-            if (ContextCompat.checkSelfPermission(context,
+            if (ActivityCompat.checkSelfPermission(context,
                     Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && ContextCompat.checkSelfPermission(context,
+                    && ActivityCompat.checkSelfPermission(context,
                     Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Log.e(TAG, "onMapReady:<23 permission true");
                 mMap.setMyLocationEnabled(true);
@@ -317,13 +320,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     //Permissionm
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     private void checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
-
                 // Show an explanation to the user *asynchronously* -- don't block
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
@@ -341,8 +343,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                         })
                         .create()
                         .show();
-
-
             } else {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(activity,
@@ -361,7 +361,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
 
                     // permission was granted, yay! Do the
                     // location-related task you need to do.
-                    if (ContextCompat.checkSelfPermission(context,
+                    if (ActivityCompat.checkSelfPermission(context,
                             Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
 
@@ -388,7 +388,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     public void onConnected(@Nullable Bundle bundle) {
         Toast.makeText(context, "onConnected", Toast.LENGTH_SHORT).show();
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                || ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             checkLocationPermission();
             return;
         }
@@ -405,7 +405,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
             //CURRENT_MARKER = mMap.addMarker(markerOptions);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG, DEFAULT_ZOOM));
         }
-
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(5000); //5 seconds
         mLocationRequest.setFastestInterval(3000); //3 seconds
@@ -638,7 +637,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                                         markerOptions = new MarkerOptions()
                                                 .position(new LatLng(Double.parseDouble((String) datares.get("latitude"))
                                                         , Double.parseDouble((String) datares.get("longitude"))))
-                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.home_alert))
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_marker))
                                                 .title((String) datares.get("name"));
 
                                     Marker marker = mMap.addMarker(markerOptions);
