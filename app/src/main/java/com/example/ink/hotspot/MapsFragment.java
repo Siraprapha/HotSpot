@@ -825,13 +825,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
             Log.e("showKML", "showKML: layer is not null");
             Log.e(TAG, "showKML: layer removed " + layer.toString());
         }
-        try {
-            Log.e("KML", "showKML: ");
-            layer = new KmlLayer(mMap, R.raw.kmltest, context);
-            layer.addLayerToMap();
-        } catch (XmlPullParserException | IOException e) {
-            e.printStackTrace();
-        }
     }
     public void showKML(int key, int day) {
         //mMap.clear();
