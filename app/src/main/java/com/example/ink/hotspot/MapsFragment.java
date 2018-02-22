@@ -693,7 +693,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                         public void onResponse(String response) {
                             // response
                             Log.d("test", response);
-                            String str = "";
                             try {
                                 JSONObject job = new JSONObject(response);
                                 JSONArray arr = job.getJSONArray("posts");
@@ -729,7 +728,22 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                             // TODO Auto-generated method stub
                             Log.e("Json", "Error on" + error.getLocalizedMessage());
                         }
-                    });
+                    }){
+                @Override
+                protected Response<String> parseNetworkResponse(
+                        NetworkResponse response) {
+                    String strUTF8 = null;
+                    try {
+                        strUTF8 = new String(response.data, "UTF-8");
+
+                    } catch (UnsupportedEncodingException e) {
+
+                        e.printStackTrace();
+                    }
+                    return Response.success(strUTF8,
+                            HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
 // Access the RequestQueue through your singleton class.
             MySingleton.getInstance(context).addToRequestQueue(postRequest);
         } else {
