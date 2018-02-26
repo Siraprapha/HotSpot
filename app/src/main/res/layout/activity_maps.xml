@@ -27,12 +27,12 @@
             android:id="@+id/map" />
         <ImageView
             android:id="@+id/kml_color_level"
-            android:layout_width="75dp"
+            android:layout_width="70dp"
             android:layout_height="200dp"
-            android:layout_gravity="right"
-            android:background="#000"
-            android:src="@drawable/image_web"
-            android:visibility="gone" />
+            android:layout_gravity="end"
+            android:src="@drawable/color_for_ffmc_fwi"
+            android:visibility="gone"
+            android:contentDescription="@string/todo" />
 
 
     </FrameLayout>

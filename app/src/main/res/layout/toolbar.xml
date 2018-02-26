@@ -13,7 +13,7 @@
         android:id="@+id/toolbar_text"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="พิกัดไฟป่า"
+        android:text="@string/app_name"
         android:textColor="@android:color/white"
         />
 

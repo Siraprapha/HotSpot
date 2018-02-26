@@ -3,15 +3,18 @@ package com.example.ink.hotspot;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.PendingIntent;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -20,7 +23,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Gravity;
@@ -34,8 +36,6 @@ import android.widget.Toast;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.Response.ErrorListener;
-import com.android.volley.Response.Listener;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -43,6 +43,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -50,19 +51,13 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.maps.android.data.kml.KmlLayer;
 
 import org.json.JSONArray;
@@ -72,49 +67,40 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executor;
-
-import static android.content.Context.LOCATION_SERVICE;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MapsFragment extends Fragment implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     private static final int DEFAULT_ZOOM = 8;
-    private LatLng DEFAULT_LATLNG;
+    private static final int DEFAULT_ZOOM_2 = 7;
+    private LatLng DEFAULT_LATLNG = new LatLng(18.128,99.54);
     private Marker CURRENT_MARKER;
 
     private static final String TAG = "MapsFragment";
 
-    private Activity activity;
+    private static Activity activity;
 
     private Context context;
 
     public GoogleMap mMap;
     Location mLastLocation;
-    Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
-    GoogleApiClient mGoogleApiClient;
     FusedLocationProviderClient mFusedLocationClient;
+
+    // The BroadcastReceiver that tracks network connectivity changes.
+    private NetworkReceiver receiver = new NetworkReceiver();
 
     private KmlLayer layer;
 
     //LatLng mDefaultLocation = new LatLng(13.738938, 100.527688);
 
-    ArrayList<Marker> sat_terra;
-    ArrayList<Marker> sat_aqua;
-    ArrayList<Marker> sat_sumi;
+    ArrayList<Marker> sat_terra = new ArrayList<>();
+    ArrayList<Marker> sat_aqua = new ArrayList<>();
+    ArrayList<Marker> sat_sumi = new ArrayList<>();
 
     ArrayList<Marker> markers_forest;
     ArrayList<Marker> markers_wild;
@@ -131,9 +117,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
+        // Registers BroadcastReceiver to track network connection changes.
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        receiver = new NetworkReceiver();
+        activity.registerReceiver(receiver, filter);
     }
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -151,86 +139,86 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
 //        Toast.makeText(context, "MapsFragment is on stack", Toast.LENGTH_LONG).show();
         return rootview;
     }
-
     @Override
     public void onPause() {
         super.onPause();
-
         //stop location updates when Activity is no longer active
         if (mFusedLocationClient != null) {
             mFusedLocationClient.removeLocationUpdates(mLocationCallback);
         }
-        //Unregister for location callbacks:
-        if (mGoogleApiClient != null) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-        }
     }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Unregisters BroadcastReceiver when app is destroyed.
+        if (receiver != null) {
+            activity.unregisterReceiver(receiver);
+        }
+    }
+
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        Log.e("Inky", "NO ACCESS_FINE_LOCATION fragment");
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(120000); // two minute interval
+        //createLocationRequest();
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(120000);
         mLocationRequest.setFastestInterval(120000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Log.e(TAG, "onMapReady:new app version: " + Build.VERSION_CODES.M + " device version: " + android.os.Build.VERSION.SDK_INT);
-
-            if (ActivityCompat.checkSelfPermission(context,
-                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    || ActivityCompat.checkSelfPermission(context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                Log.e(TAG, "onMapReady:>23 permission true "+PackageManager.PERMISSION_GRANTED);
-                //Location Permission already granted
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    ){
                 mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                 mMap.setMyLocationEnabled(true);
-                mFusedLocationClient.getLastLocation()
-                        .addOnSuccessListener(activity, new OnSuccessListener<Location>() {
-                            @Override
-                            public void onSuccess(Location location) {
-                                // Got last known location. In some rare situations this can be null.
-                                if (location != null) {
-                                    // Logic to handle location object
-                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),
-                                            DEFAULT_ZOOM));
-                                }
-                            }
-                        });
+//                mFusedLocationClient.getLastLocation()
+//                        .addOnSuccessListener(activity, new OnSuccessListener<Location>() {
+//                            @Override
+//                            public void onSuccess(Location location) {
+//                                // Got last known location. In some rare situations this can be null.
+//                                if (location != null) {
+//                                    // Logic to handle location object
+//                                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),
+//                                            DEFAULT_ZOOM));
+//                                }
+//                            }
+//                        });
             } else {
                 Log.e(TAG, "onMapReady:>23 permission false");
                 //Request Location Permission
                 checkLocationPermission();
             }
         } else {
-            Log.e(TAG, "onMapReady:old app version: " + Build.VERSION_CODES.M + " device version: " + android.os.Build.VERSION.SDK_INT);
-            if (ActivityCompat.checkSelfPermission(context,
-                    Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                Log.e(TAG, "onMapReady:<23 permission true");
-                mMap.setMyLocationEnabled(true);
-                buildGoogleApiClient();
-            } else {
-                Log.e(TAG, "onMapReady:<23 permission false");
-                //Request Location Permission
-                checkLocationPermission();
-            }
-
+            Log.e(TAG, "onMapReady: old app version: " + Build.VERSION_CODES.M + " device version: " + android.os.Build.VERSION.SDK_INT);
+            mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
+            mMap.setMyLocationEnabled(true);
         }
         //currLocate = new CurrentLocation(mMap,activity);
         //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG, DEFAULT_ZOOM));
-        String url = "http://tatam.esy.es/api.php?key=map";
+
         //String url = "http://tatam.esy.es/test/api.php?key=maprealtime";
         //showKML();
-        CallJsonHotSpot(url);
-
+//        String url = "http://tatam.esy.es/api.php?key=map";
+//        CallJsonHotSpot(url);
+//        if(isNetworkConn()){
+//            Log.e(TAG, "onMapReady: has internet conn" );
+//            String url = "http://tatam.esy.es/api.php?key=map";
+//            CallJsonHotSpot(url);
+//        }else {
+//            Log.e(TAG, "onMapReady: no internet conn" );
+//            //checkNetworkPermission();
+//            showInternetAlertDialog();
+//        }
+/*
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -252,7 +240,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
             public void onMarkerDragEnd(Marker marker) {
 
             }
-        });
+        });*/
         //handler.postDelayed(runnable, 10000);
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
             @Override
@@ -283,46 +271,56 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         });
     }
 
+    protected void createLocationRequest() {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
     LocationCallback mLocationCallback = new LocationCallback(){
         @Override
         public void onLocationResult(LocationResult locationResult) {
+            Log.i(TAG, "onLocationResult: "+locationResult.getLocations());
             for (Location location : locationResult.getLocations()) {
                 Log.i("MapsActivity", "Location: " + location.getLatitude() + " " + location.getLongitude());
                 mLastLocation = location;
-                if (mCurrLocationMarker != null) {
-                    mCurrLocationMarker.remove();
-                }
+//                if (mCurrLocationMarker != null) {
+//                    Log.e(TAG, "onLocationResult: mCurrLocationMarker = "+mCurrLocationMarker );
+//                    mCurrLocationMarker.remove();
+//                }
 
                 //Place current location marker
                 LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title("Current Position");
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                //mCurrLocationMarker = mMap.addMarker(markerOptions);
+//                MarkerOptions markerOptions = new MarkerOptions();
+//                markerOptions.position(latLng);
+//                markerOptions.title("Current Position");
+//                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+//                //mCurrLocationMarker = mMap.addMarker(markerOptions);
 
                 //move map camera
                 //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, DEFAULT_ZOOM));
             }
         }
 
+        @Override
+        public void onLocationAvailability(LocationAvailability locationAvailability) {
+            super.onLocationAvailability(locationAvailability);
+            //Log.i(TAG, "onLocationAvailability: "+locationAvailability.toString());
+            if(!locationAvailability.isLocationAvailable()){
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG, DEFAULT_ZOOM_2));
+                //Log.i(TAG, "onLocationAvailability 2: "+locationAvailability.toString());
+            }
+        }
     };
-    protected synchronized void buildGoogleApiClient() {
-        Toast.makeText(context,"buildGoogleApiClient",Toast.LENGTH_SHORT).show();
-        mGoogleApiClient = new GoogleApiClient.Builder(context)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-        mGoogleApiClient.connect();
-    }
 
-    //Permissionm
+    //Permission
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
-    private void checkLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
+    public static final int MY_PERMISSIONS_REQUEST_NETWORK = 100;
+    public void checkLocationPermission() {
+        Log.e(TAG, "checkLocationPermission: ");
+        if (ActivityCompat.checkSelfPermission(context,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -348,101 +346,125 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                 ActivityCompat.requestPermissions(activity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION );
+
             }
         }
     }
+    public void checkNetworkPermission(){
+        Log.e(TAG, "checkNetworkPermission: ");
+        if (ActivityCompat.checkSelfPermission(context,
+                Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity,
+                    Manifest.permission.INTERNET)) {
+                Log.e(TAG, "checkNetworkPermission: show dialog.");
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                AlertDialog.Builder builder = new AlertDialog.Builder(context)
+                        .setTitle("Network Permission Needed")
+                        .setMessage("This app needs the Network permission, please accept to use Network functionality")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                //Prompt the user once explanation has been shown
+                                ActivityCompat.requestPermissions(activity,
+                                        new String[]{Manifest.permission.INTERNET},
+                                        MY_PERMISSIONS_REQUEST_NETWORK );
+                            }
+                        });
+                builder.create();
+            } else {
+                Log.e(TAG, "checkNetworkPermission: request permission" );
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(activity,
+                        new String[]{Manifest.permission.INTERNET},
+                        MY_PERMISSIONS_REQUEST_NETWORK );
+            }
+        }
+    }
+    public static boolean isNetworkConn(){
+        ConnectivityManager connMgr = (ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        boolean isWifiConn = networkInfo.isConnected();
+        networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        boolean isMobileConn = networkInfo.isConnected();
+        Log.d(TAG, "Wifi connected: " + isWifiConn);
+        Log.d(TAG, "Mobile connected: " + isMobileConn);
+        return isWifiConn || isMobileConn;
+    }
+    public boolean isOnline() {
+        ConnectivityManager connMgr = (ConnectivityManager)activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
+    }
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[],
+                                           @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                    Toast.makeText(context, "permission granted", Toast.LENGTH_LONG).show();
                     // permission was granted, yay! Do the
                     // location-related task you need to do.
                     if (ActivityCompat.checkSelfPermission(context,
                             Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
-
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                         mMap.setMyLocationEnabled(true);
+//                        mFusedLocationClient.getLastLocation()
+//                                .addOnSuccessListener(activity, new OnSuccessListener<Location>() {
+//                                    @Override
+//                                    public void onSuccess(Location location) {
+//                                        // Got last known location. In some rare situations this can be null.
+//                                        if (location != null) {
+//                                            // Logic to handle location object
+//                                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(),location.getLongitude()),
+//                                                    DEFAULT_ZOOM));
+//                                            Log.e(TAG, "onRequestPermissionsResult: move camera" );
+//                                        }
+//                                    }
+//                                });
+                    }
+
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(context, "permission denied", Toast.LENGTH_LONG).show();
+                    showGPSAlertDialog();
+                    //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG,DEFAULT_ZOOM));
+
+                }
+                break;
+            }
+            case MY_PERMISSIONS_REQUEST_NETWORK: {
+// If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    if (ActivityCompat.checkSelfPermission(context,
+                            Manifest.permission.INTERNET)
+                            == PackageManager.PERMISSION_GRANTED){
+
                     }
 
                 } else {
 
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
-                    Toast.makeText(context, "permission denied", Toast.LENGTH_LONG).show();
                 }
-                return;
+                break;
             }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
-
     }
-    // API<23
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        Toast.makeText(context, "onConnected", Toast.LENGTH_SHORT).show();
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            checkLocationPermission();
-            return;
-        }
-        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        if (mLastLocation != null) {
-            //place marker at current position
-            mMap.clear();
-            DEFAULT_LATLNG = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            MarkerOptions markerOptions = new MarkerOptions();
-            markerOptions.position(DEFAULT_LATLNG);
-            markerOptions.title("Current Position");
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-            //CURRENT_MARKER = mMap.addMarker(markerOptions);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG, DEFAULT_ZOOM));
-        }
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(5000); //5 seconds
-        mLocationRequest.setFastestInterval(3000); //3 seconds
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        //mLocationRequest.setSmallestDisplacement(0.1F); //1/10 meter
 
-        LocationServices.getFusedLocationProviderClient(context).requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
-
-    }
-    @Override
-    public void onConnectionSuspended(int i) {
-        Toast.makeText(context,"onConnectionSuspended",Toast.LENGTH_SHORT).show();
-    }
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(context,"onConnectionFailed",Toast.LENGTH_SHORT).show();
-    }
-    @Override
-    public void onLocationChanged(Location location) {
-
-        //remove previous current location marker and add new one at current position
-        if (CURRENT_MARKER != null) {
-            CURRENT_MARKER.remove();
-        }
-        DEFAULT_LATLNG = new LatLng(location.getLatitude(), location.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(DEFAULT_LATLNG);
-        markerOptions.title("Current Position");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        CURRENT_MARKER = mMap.addMarker(markerOptions);
-
-        Toast.makeText(context,"Location Changed",Toast.LENGTH_SHORT).show();
-
-        //move map camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG, DEFAULT_ZOOM));
-        //If you only need one location, unregister the listener
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-    }
+    //check wifi
+    //open wifi
 
     //JSON: station = forest, wild, pm10
     public void removeMarker(ArrayList<Marker> h) {
@@ -481,6 +503,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     }
     //on click item
     public void onCallJson(int key) {
+        if(!isNetworkConn()){
+            showInternetAlertDialog();
+            return;
+        }
         switch (key) {
             case 0: {
                 if (!isForestonMap) {
@@ -537,22 +563,33 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                                 String sat = (String) datares.get("satellite");
                                 String date = (String) datares.get("acq_date");
                                 String time = (String) datares.get("acq_time");
-
-                                Marker m = mMap.addMarker(new MarkerOptions()
-                                        .position(new LatLng(lat, lng))
-                                        .title("พิกัดไฟป่า")
-                                        .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame16))
-                                        .visible(false));
-
+                                Marker m;
                                 switch (sat) {
                                     case "Terra":
+                                        m = mMap.addMarker(new MarkerOptions()
+                                                .position(new LatLng(lat, lng))
+                                                .title("พิกัดไฟป่า")
+                                                .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame_blue))
+                                                .visible(false));
                                         sat_terra.add(m);
                                         break;
                                     case "Aqua":
+                                        m = mMap.addMarker(new MarkerOptions()
+                                                .position(new LatLng(lat, lng))
+                                                .title("พิกัดไฟป่า")
+                                                .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame16))
+                                                .visible(false));
                                         sat_aqua.add(m);
                                         break;
                                     default:
+                                        m = mMap.addMarker(new MarkerOptions()
+                                                .position(new LatLng(lat, lng))
+                                                .title("พิกัดไฟป่า")
+                                                .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame_green))
+                                                .visible(false));
                                         sat_sumi.add(m);
                                         break;
                                 }
@@ -589,7 +626,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                     if (sat_terra.get(0).isVisible()) {
                         hideMarker(sat_terra);
                     } else showMarker(sat_terra);
-                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_LONG).show();
+                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
                 break;
             }
             case 1: {
@@ -597,7 +634,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                     if (sat_aqua.get(0).isVisible()) {
                         hideMarker(sat_aqua);
                     } else showMarker(sat_aqua);
-                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_LONG).show();
+                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
                 break;
             }
             case 2: {
@@ -605,7 +642,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                     if (sat_sumi.get(0).isVisible()) {
                         hideMarker(sat_sumi);
                     } else showMarker(sat_sumi);
-                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_LONG).show();
+                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
                 break;
             }
         }
@@ -637,7 +674,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                                         markerOptions = new MarkerOptions()
                                                 .position(new LatLng(Double.parseDouble((String) datares.get("latitude"))
                                                         , Double.parseDouble((String) datares.get("longitude"))))
-                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_marker))
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.security_home_forest))
                                                 .title((String) datares.get("name"));
 
                                     Marker marker = mMap.addMarker(markerOptions);
@@ -707,7 +744,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                                     MarkerOptions markerOptions = new MarkerOptions()
                                             .position(new LatLng(Double.parseDouble((String) datares.get("latitude"))
                                                     , Double.parseDouble((String) datares.get("longitude"))))
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_marker))
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.security_home_wild))
                                             .title((String) datares.get("name"));
 
                                     Marker marker = mMap.addMarker(markerOptions);
@@ -782,7 +819,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
 
                                     MarkerOptions markerOptions = new MarkerOptions()
                                             .position(new LatLng(lat, lng))
-                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.dot_and_circle))
+                                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker))
                                             .title("ค่าฝุ่นละอองในอากาศ PM10: " + pm10 + " " + unit)
                                             .draggable(true)
                                             .snippet("สถานี: " + nameTH + "\n " + areaTH + "\nวันที่: " + date + " เวลา: " + time);
@@ -815,19 +852,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     }
 
     //KML
-    public void showKML() {
-        //mMap.clear();
-
-        if (layer != null) {
-            Log.e(TAG, "showKML: layer " + layer.toString());
-            layer.removeLayerFromMap();
-            Log.e("showKML", "showKML: layer is not null");
-            Log.e(TAG, "showKML: layer removed " + layer.toString());
-        }
-    }
     public void showKML(int key, int day) {
         //mMap.clear();
-
         if (layer != null) {
             Log.e(TAG, "showKML: layer " + layer.toString());
             layer.removeLayerFromMap();
@@ -911,6 +937,36 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         }
     }
 
+    //Dialog Handle
+    public static void showInternetAlertDialog(){
+        Log.e(TAG, "showInternetAlertDialog: ");
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+                .setTitle("คุณไม่ได้เชื่อมต่ออินเตอร์เน็ต")
+                .setMessage("กรุณาเชื่อมต่ออินเตอร์เน็ต")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //Prompt the user once explanation has been shown
+                        dialogInterface.dismiss();
+                    }
+                });
+        builder.show();
+        Log.e(TAG, "showInternetAlertDialog: created");
+    }
+    public void showGPSAlertDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity)
+                .setTitle("คุณไม่ได้เชื่อมต่อgps")
+                .setMessage("กรุณาเปิดgps")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        //Prompt the user once explanation has been shown
+                        dialogInterface.dismiss();
+                    }
+                });
+        builder.create();
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -922,11 +978,24 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         super.onActivityCreated(savedInstanceState);
     }
 
-    public GoogleMap getmMap() {
-        return mMap;
-    }
+    public class NetworkReceiver extends BroadcastReceiver {
 
-    public boolean isLayeronMap() {
-        return isLayeronMap;
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Checks the user prefs and the network connection. Based on the result, decides whether
+            // to refresh the display or keep the current display.
+            // If the userpref is Wi-Fi only, checks to see if the device has a Wi-Fi connection.
+            if (isNetworkConn()) {
+                // If device has its Wi-Fi connection, sets refreshDisplay
+                // to true. This causes the display to be refreshed when the user
+                // returns to the app.
+                Toast.makeText(context, "เชื่อมต่ออินเตอร์เน็ตแล้ว", Toast.LENGTH_SHORT).show();
+                String url = "http://tatam.esy.es/api.php?key=map";
+                CallJsonHotSpot(url);
+            } else {
+                Toast.makeText(context, "ไม่มีการเชื่อมต่ออินเตอร์เน็ต", Toast.LENGTH_SHORT).show();
+                showInternetAlertDialog();
+            }
+        }
     }
 }

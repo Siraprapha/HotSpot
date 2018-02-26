@@ -16,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:text="แจ้งเตือนไฟป่า"
+            android:text="ยินดีต้อนรับ"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textColor="@android:color/white"
             android:textSize="20sp" />

@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/home"
-        android:icon="@mipmap/ic_home_black_24dp"
+        android:icon="@drawable/home"
         android:title="@string/home"
         android:checkable="true" />
 
@@ -15,17 +15,17 @@
                 <item
                     android:id="@+id/terra"
                     android:title="Terra"
-                    android:icon="@drawable/satellite_variant"
+                    android:icon="@drawable/satellite_variant_terra"
                     android:checkable="true" />
                 <item
                     android:id="@+id/aqua"
                     android:title="Aqua"
-                    android:icon="@drawable/satellite_variant"
+                    android:icon="@drawable/satellite_variant_aqua"
                     android:checkable="true" />
                 <item
                     android:id="@+id/sumi"
                     android:title="Sumi"
-                    android:icon="@drawable/satellite_variant"
+                    android:icon="@drawable/satellite_variant_sumi"
                     android:checkable="true" />
             </group>
         </menu>
@@ -37,18 +37,18 @@
                 android:id="@+id/group_kmz" >
                 <item
                     android:id="@+id/ffmc"
-                    android:title="พื้นที่ที่ไฟติดยาก/ง่าย"
-                    android:icon="@drawable/plus"
+                    android:title="ค่าความชื้นเชื้อเพลิง(FFMC)"
+                    android:icon="@drawable/layers"
                     android:checkable="true" />
                 <item
                     android:id="@+id/fwi"
-                    android:title="พื้นที่ที่ไฟลุกลามยาก/ง่าย"
-                    android:icon="@drawable/plus"
+                    android:title="ค่าความรุนแรงไฟ(FWI)"
+                    android:icon="@drawable/layers"
                     android:checkable="true" />
                 <item
                     android:id="@+id/pm10"
-                    android:title="ปริมาณฝุ่นละอองในอากาศ"
-                    android:icon="@drawable/plus"
+                    android:title="ค่าฝุ่นละอองในอากาศ(PM10)"
+                    android:icon="@drawable/map_marker"
                     android:checkable="true" />
             </group>
         </menu>
@@ -61,10 +61,12 @@
                 <item
                     android:id="@+id/st_forest"
                     android:title="@string/st_forest"
+                    android:icon="@drawable/security_home"
                     android:checkable="true" />
                 <item
                     android:id="@+id/st_wilds"
                     android:title="@string/st_wilds"
+                    android:icon="@drawable/security_home"
                     android:checkable="true" />
             </group>
         </menu>

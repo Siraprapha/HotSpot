@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Fire HotSpot</string>
+    <string name="app_name">Dubb Fire</string>
     <string name="title_activity_maps">Map</string>
     <string name="drawer_open">Open Navigation drawer</string>
     <string name="drawer_close">Close Navigation drawer</string>
@@ -28,5 +28,6 @@
     <string name="home">หน้าแรก</string>
     <string name="moreinfo">ข้อมูลเพิ่มเติม</string>
     <string name="satellite">ดาวเทียม</string>
+    <string name="todo">TODO</string>
 
 </resources>

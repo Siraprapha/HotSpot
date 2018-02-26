@@ -6,9 +6,9 @@ import android.os.Handler;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,7 +23,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.DateFormat;
@@ -37,9 +36,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public NavigationView nvDrawer;
     ActionBarDrawerToggle drawerToggle;
     View header_view;
-    TextView nav_header_name;
     private static final String TAG = "MapsActivity";
-    TextView nav_header_circle;
     ImageView kml_color_level;
 
     PopupMenu popup_ffmc;
@@ -50,11 +47,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
     Fragment current_fragment;
 
-    UserPref userpref;
-
     Handler handler;
 
     Fragment mapsFragment;
+    Fragment about_us_fragment;
 
     public final Runnable runnable = new Runnable() {
         @Override
@@ -100,6 +96,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         mDrawer.addDrawerListener(drawerToggle);
         // Find our drawer view
         nvDrawer = findViewById(R.id.nvView);
+        nvDrawer.setItemIconTintList(null);
         // Inflate the header view at runtime
         //View headerLayout = nvDrawer.inflateHeaderView(R.layout.nav_header);
         header_view = nvDrawer.getHeaderView(0);
@@ -141,7 +138,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                         selectDrawerItem(menuItem);
                         return true;
                     }
@@ -155,7 +152,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
                 if (!(current_fragment instanceof MapsFragment)) {
                     unCheckItems();
-                    getSupportFragmentManager().popBackStack();
+                    int count = getSupportFragmentManager().getBackStackEntryCount();
+                    for(int i = 0; i < count; ++i) {
+                        getSupportFragmentManager().popBackStack();
+                    }
                 }
                 mDrawer.openDrawer(GravityCompat.START);
                 break;
@@ -209,19 +209,29 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.call:
-                kml_color_level.setVisibility(View.GONE);
-
-                fragment = UserCall.newInstance();
-                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.map, fragment)
-                        .addToBackStack(null)
-                        .commit();
+                kml_color_level.setVisibility(View.GONE);//remove color index
+                current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (!(current_fragment instanceof UserCall)) {
+                    fragment = UserCall.newInstance();
+                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.map, fragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
                 break;
-            case R.id.about:
-                Toast.makeText(this,"about",Toast.LENGTH_LONG).show();
+            case R.id.about:{
+                //Toast.makeText(this,"about",Toast.LENGTH_LONG).show();
+                current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (!(current_fragment instanceof AboutFragment)) {
+                    fragment = AboutFragment.newInstance();
+                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.map, fragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
                 break;
-            default:
-                fragment = null;
+            }
+             default:break;
         }
 
         // Close the navigation drawer
@@ -238,6 +248,10 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
     //Popup Menu
     public void showPopUpMenu(int KML_KEY){
+        if(!MapsFragment.isNetworkConn()){
+            MapsFragment.showInternetAlertDialog();
+            return;
+        }
         if(KML_KEY==0){
             popup_ffmc = setPopUpMenu(popup_ffmc);
             popup_ffmc.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -290,28 +304,35 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public void onClickDays_ffmc(MenuItem item,boolean checked){
         MapsFragment m = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if(checked){
-            kml_color_level.setVisibility(View.VISIBLE);
+
             switch (item.getItemId()){
                 case R.id.ffmc_0:
                     m.showKML(0,1);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.ffmc_1:
                     m.showKML(0,2);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.ffmc_2:
                     m.showKML(0,3);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.ffmc_3:
                     m.showKML(0,4);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.ffmc_4:
                     m.showKML(0,5);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.ffmc_5:
-                    m.showKML(0,6); //wait for tam
+                    m.showKML(0,6);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.ffmc_past:
                     //m.showKML(m.getmMap(),0,6);
+                    kml_color_level.setVisibility(View.GONE);
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www2.dnp.go.th/gis/FDRS/Blog%20Posts/Archive_SEA.php"));
                     startActivity(browserIntent);
                     break;
@@ -324,28 +345,34 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     public void onClickDays_fwi(MenuItem item,boolean checked){
         MapsFragment m = (MapsFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if(checked){
-            kml_color_level.setVisibility(View.VISIBLE);
             switch (item.getItemId()){
                 case R.id.fwi_0:
                     m.showKML(1,1);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.fwi_1:
                     m.showKML(1,2);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.fwi_2:
                     m.showKML(1,3);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.fwi_3:
                     m.showKML(1,4);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.fwi_4:
                     m.showKML(1,5);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.fwi_5:
-                    m.showKML(0,6); //wait for tam
+                    m.showKML(0,6);
+                    kml_color_level.setVisibility(View.VISIBLE);
                     break;
                 case R.id.fwi_past:
                     //m.showKML(m.getmMap(),0,6);
+                    kml_color_level.setVisibility(View.GONE);
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www2.dnp.go.th/gis/FDRS/Blog%20Posts/Archive_SEA.php"));
                     startActivity(browserIntent);
                     break;
