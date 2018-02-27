@@ -308,8 +308,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             super.onLocationAvailability(locationAvailability);
             //Log.i(TAG, "onLocationAvailability: "+locationAvailability.toString());
             if(!locationAvailability.isLocationAvailable()){
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG, DEFAULT_ZOOM_2));
-                //Log.i(TAG, "onLocationAvailability 2: "+locationAvailability.toString());
+                showGPSAlertDialog();
+                if(mLastLocation!=null){
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()), DEFAULT_ZOOM));
+                }else {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG, DEFAULT_ZOOM_2));
+                    //Log.i(TAG, "onLocationAvailability 2: "+locationAvailability.toString());
+                }
             }
         }
     };
@@ -407,7 +412,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(context, "permission granted", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(context, "permission granted", Toast.LENGTH_LONG).show();
                     // permission was granted, yay! Do the
                     // location-related task you need to do.
                     if (ActivityCompat.checkSelfPermission(context,
@@ -433,7 +438,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
-                    Toast.makeText(context, "permission denied", Toast.LENGTH_LONG).show();
+                    //Toast.makeText(context, "permission denied", Toast.LENGTH_LONG).show();
                     showGPSAlertDialog();
                     //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LATLNG,DEFAULT_ZOOM));
 
