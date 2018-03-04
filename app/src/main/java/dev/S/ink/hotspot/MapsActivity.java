@@ -1,5 +1,7 @@
 package dev.S.ink.hotspot;
 
+import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
@@ -154,6 +156,16 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                     for(int i = 0; i < count; ++i) {
                         getSupportFragmentManager().popBackStack();
                     }
+                    current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                    FragmentTransaction frt = getSupportFragmentManager().beginTransaction();
+                    frt.detach(current_fragment);
+                    frt.attach(current_fragment);
+                    frt.commit();
+                }else {
+                    FragmentTransaction frt = getSupportFragmentManager().beginTransaction();
+                    frt.detach(current_fragment);
+                    frt.attach(current_fragment);
+                    frt.commit();
                 }
                 mDrawer.openDrawer(GravityCompat.START);
                 break;
@@ -218,6 +230,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.about:{
+                kml_color_level.setVisibility(View.GONE);//remove color index
                 //Toast.makeText(this,"about",Toast.LENGTH_LONG).show();
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
                 if (!(current_fragment instanceof AboutFragment)) {
@@ -393,6 +406,13 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onBackPressed() {
+        if(getSupportFragmentManager().getBackStackEntryCount()==1){
+            current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+            FragmentTransaction frt = getSupportFragmentManager().beginTransaction();
+            frt.detach(current_fragment);
+            frt.attach(current_fragment);
+            frt.commit();
+        }
         if(getSupportFragmentManager().getBackStackEntryCount()==0){
             ShowDialogExit();
         }else {

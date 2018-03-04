@@ -28,6 +28,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,6 +69,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+
+import okhttp3.ResponseBody;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -154,7 +157,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public void onDestroyView() {
         super.onDestroyView();
     }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -163,6 +165,21 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             activity.unregisterReceiver(receiver);
         }
     }
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+        this.activity = (Activity) context;
+    }
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -204,13 +221,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         //showKML();
 //        String url = "http://tatam.esy.es/api.php?key=map";
 //        CallJsonHotSpot(url);
-//        if(isNetworkConn()){
-//            String url = "http://tatam.esy.es/api.php?key=map";
-//            CallJsonHotSpot(url);
-//        }else {
-//            //checkNetworkPermission();
-//            showInternetAlertDialog();
-//        }
+        if(isNetworkConn()){
+            CallJsonHotSpot();
+        }else {
+            //checkNetworkPermission();
+            showInternetAlertDialog();
+        }
 /*
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -467,9 +483,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
     }
     public void showMarker(ArrayList<Marker> h) {
-        for (int i = 0; i < h.size(); i++) {
-            Marker m = h.get(i);
-            m.setVisible(true);
+        if(h != null){
+            for (int i = 0; i < h.size(); i++) {
+                Marker m = h.get(i);
+                m.setVisible(true);
+            }
         }
     }
     public ArrayList<Marker> maxSizeArrayList(ArrayList<Marker> a, ArrayList<Marker> b, ArrayList<Marker> c) {
@@ -523,7 +541,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         }
     }
     //Marker From JSON: hot spot
-    public void CallJsonHotSpot(String url) {
+    public void CallJsonHotSpot() {
+        String url = "http://tatam.esy.es/api.php?key=map";
         StringRequest postRequest = new StringRequest(Request.Method.POST, url,
                 new Response.Listener<String>()
                 {
@@ -912,17 +931,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         builder.create();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        this.context = context;
-        this.activity = (Activity) context;
-    }
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
-
     public class NetworkReceiver extends BroadcastReceiver {
 
         @Override
@@ -936,11 +944,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 // returns to the app.
                 Toast.makeText(context, "เชื่อมต่ออินเตอร์เน็ตแล้ว", Toast.LENGTH_SHORT).show();
                 String url = "http://tatam.esy.es/api.php?key=map";
-                CallJsonHotSpot(url);
+                CallJsonHotSpot();
             } else {
                 Toast.makeText(context, "ไม่มีการเชื่อมต่ออินเตอร์เน็ต", Toast.LENGTH_SHORT).show();
                 showInternetAlertDialog();
             }
         }
     }
+
+    public String baseURL = "http://tatam.esy.es/";
+    public String url_hotspot = "api.php?key=map";
+    public String url_forest = "api.php?key=station&sub=forest";
+    public String url_wild = "api.php?key=station&sub=wild";
+    public String url_pm10 = "getair4thai.php";
+
 }
