@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:406021808556:android:db3c8a71772bfb42",
         "android_client_info": {
-          "package_name": "com.example.ink.hotspot"
+          "package_name": "dev.S.ink.hotspot"
         }
       },
       "oauth_client": [

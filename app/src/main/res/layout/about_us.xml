@@ -4,7 +4,7 @@
     android:id="@+id/about_us_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AboutFragment">
+    tools:context="dev.S.ink.hotspot.AboutFragment">
     <ImageView
         android:id="@+id/img"
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/img"
         android:padding="20dp"
-        android:text="แอปพลิเคชัน Dubb Fire (ดับไฟ) จัดทำโดย นิสิตภาควิชาวิทยาการคอมพิวเตอร์ คณะวิทยาศาสตร์ จุฬาลงกรณ์มหาวิทยาลัย\n\tโดยมีวัตถุประสงค์เพื่อเป็นเครื่องมือช่วยบริหารจัดการไฟป่าให้กับเจ้าหน้าที่ศูนย์ควบคุมไฟป่าภายในพื้นที่ภาคเหนือของประเทศไทย และมีฟังก์ชันเสริมคือ โทรแจ้งเหตุไฟป่าสำหรับบุคคลทั่วไป เพื่อเสริมประสิทธิภาพให้กับแอปพลิเคชัน\n\nทีมผู้พัฒนา \n\t1. นายภาสกร   จุ้ยเปี่ยม \n\t2. นางสาวศิรประภา   บุญรัตน์\nอาจารย์ที่ปรึกษา\tดร.อาธร   เหลืองสดใส\nที่ปรึกษาพิเศษ\tดร.วีรชัย   วีรชัย ตันพิพัฒน์\tนักวิจัยจาก หน่วยวิจัยเชี่ยวชาญเฉพาะทางด้านไฟป่าภูมิภาคอาเซียนตอนบน (Upper ASEAN Wildland Fire Special Research Unit) ศูนย์วิจัยป่าไม้ คณะวนศาสตร์ ม.เกษตรศาสตร์."
+        android:text="@string/aboutus"
         android:maxLines="100"
         android:lines="20"
         android:textColor="#000"/>

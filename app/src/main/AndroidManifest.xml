@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ink.hotspot">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="dev.S.ink.hotspot">
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -31,7 +32,7 @@
         android:theme="@style/AppTheme"
         android:largeHeap="true">
         <activity
-            android:name=".Splash"
+            android:name="dev.S.ink.hotspot.Splash"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,7 +46,7 @@
             android:value="AIzaSyDxGhs4Vc29365hZgI0RaGdfkWLY28Y66M" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name="dev.S.ink.hotspot.MapsActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -54,14 +55,14 @@
         </activity>
 
         <service
-            android:name=".MyFirebaseMessagingService"
+            android:name="dev.S.ink.hotspot.MyFirebaseMessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
         <service
-            android:name=".MyFirebaseInstanceIDService"
+            android:name="dev.S.ink.hotspot.MyFirebaseInstanceIDService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
@@ -69,7 +70,7 @@
         </service>
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.example.android.fileprovider"
+            android:authorities="com.S.android.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

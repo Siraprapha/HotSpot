@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.ink.hotspot.UserCall"
+    tools:context="com.S.ink.hotspot.iam.S.ink.hotspot.UserCall"
     android:theme="@style/AppTheme3">
 
     <Button

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/AppTheme3"
-    tools:context="com.example.ink.hotspot.StaffReport">
+    tools:context="com.S.ink.hotspot.StaffReport">
 
     <!-- TODO: Update blank fragment layout -->
     <TextView

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/home"
@@ -14,17 +13,17 @@
                 android:id="@+id/sat" >
                 <item
                     android:id="@+id/terra"
-                    android:title="Terra"
+                    android:title="@string/terra"
                     android:icon="@drawable/satellite_variant_terra"
                     android:checkable="true" />
                 <item
                     android:id="@+id/aqua"
-                    android:title="Aqua"
+                    android:title="@string/aqua"
                     android:icon="@drawable/satellite_variant_aqua"
                     android:checkable="true" />
                 <item
                     android:id="@+id/sumi"
-                    android:title="Sumi"
+                    android:title="@string/sumi"
                     android:icon="@drawable/satellite_variant_sumi"
                     android:checkable="true" />
             </group>
@@ -37,17 +36,17 @@
                 android:id="@+id/group_kmz" >
                 <item
                     android:id="@+id/ffmc"
-                    android:title="ค่าความชื้นเชื้อเพลิง(FFMC)"
+                    android:title="@string/ffmc"
                     android:icon="@drawable/layers"
                     android:checkable="true" />
                 <item
                     android:id="@+id/fwi"
-                    android:title="ค่าความรุนแรงไฟ(FWI)"
+                    android:title="@string/fwi"
                     android:icon="@drawable/layers"
                     android:checkable="true" />
                 <item
                     android:id="@+id/pm10"
-                    android:title="ค่าฝุ่นละอองในอากาศ(PM10)"
+                    android:title="@string/pm10"
                     android:icon="@drawable/map_marker"
                     android:checkable="true" />
             </group>
