@@ -454,13 +454,14 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBackPressed() {
         FragmentManager fm = getSupportFragmentManager();
-        if(fm.getBackStackEntryCount()==1){
+        /*if(fm.getBackStackEntryCount()==1){
             current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
             FragmentTransaction frt = getSupportFragmentManager().beginTransaction();
             frt.detach(current_fragment);
             frt.attach(current_fragment);
             frt.commit();
-        }else if(fm.getBackStackEntryCount()==0){
+        }else */
+        if(fm.getBackStackEntryCount()==0){
             ShowDialogExit();
         }else {
             unCheckItems();
