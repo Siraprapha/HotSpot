@@ -111,6 +111,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     boolean isLayeronMap = false;
 
+    private MapsFragmentListener mapsFragmentListener;
+
     public static Fragment newInstance() {
         MapsFragment m = new MapsFragment();
         return m;
@@ -170,6 +172,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         super.onAttach(context);
         this.context = context;
         this.activity = (Activity) context;
+        try {
+            mapsFragmentListener = (MapsFragmentListener) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Must implement MapsFragmentListener");
+        }
     }
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -231,8 +238,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                return false;
-            }
+                return false;}
         });
         mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
             @Override
@@ -501,6 +507,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             } else return c;
         }
     }
+    public Marker addMarkerHotspot(MarkerOptions mop,int res){
+        return mMap.addMarker(mop.icon(BitmapDescriptorFactory.fromResource(res)));
+
+    }
     //on click item
     public void onCallJson(int key) {
         if(!isNetworkConn()){
@@ -558,48 +568,44 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             for (int i = 0; i < arr.length(); i++) {
                                 JSONObject o = arr.getJSONObject(i);
                                 JSONObject datares = o.getJSONObject(Integer.toString(i + 1));
+
                                 double lat = Double.parseDouble((String) datares.get("latitude"));
                                 double lng = Double.parseDouble((String) datares.get("longitude"));
                                 String sat = (String) datares.get("satellite");
                                 String date = (String) datares.get("acq_date");
                                 String time = (String) datares.get("acq_time");
-                                Marker m;
+
+                                MarkerOptions mop = new MarkerOptions()
+                                        .position(new LatLng(lat, lng))
+                                        .title("พิกัดไฟป่า")
+                                        .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
+                                        .visible(false);
                                 switch (sat) {
-                                    case "Terra":
-                                        m = mMap.addMarker(new MarkerOptions()
-                                                .position(new LatLng(lat, lng))
-                                                .title("พิกัดไฟป่า")
-                                                .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
-                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame_blue))
-                                                .visible(false));
-                                        sat_terra.add(m);
+                                    case "Terra":{
+                                        sat_terra.add(addMarkerHotspot(mop,R.drawable.flame_blue));
                                         break;
-                                    case "Aqua":
-                                        m = mMap.addMarker(new MarkerOptions()
-                                                .position(new LatLng(lat, lng))
-                                                .title("พิกัดไฟป่า")
-                                                .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
-                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame16))
-                                                .visible(false));
-                                        sat_aqua.add(m);
+                                    }
+                                    case "Aqua":{
+                                        sat_aqua.add(addMarkerHotspot(mop,R.drawable.flame16));
                                         break;
-                                    default:
-                                        m = mMap.addMarker(new MarkerOptions()
-                                                .position(new LatLng(lat, lng))
-                                                .title("พิกัดไฟป่า")
-                                                .snippet("ดาวเทียม: " + sat + "\nวันและเวลา: " + date + " " + time + "\nตำแหน่ง: " + lat + ", " + lng)
-                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.flame_green))
-                                                .visible(false));
-                                        sat_sumi.add(m);
+                                    }
+                                    case "Suomi NPP":{
+                                        sat_sumi.add(addMarkerHotspot(mop,R.drawable.flame_green));
                                         break;
+                                    }
                                 }
-                            }
+                            }/*
                             ArrayList<Marker> t = maxSizeArrayList(sat_aqua, sat_sumi, sat_terra);
                             if (t == sat_aqua) {
                                 showMarker(sat_aqua);
+                                mapsFragmentListener.onAquaShow(true);
                             } else if (t == sat_sumi) {
                                 showMarker(sat_sumi);
-                            } else showMarker(sat_terra);
+                                mapsFragmentListener.onSuomiShow(true);
+                            } else {
+                                showMarker(sat_terra);
+                                mapsFragmentListener.onTerraShow(true);
+                            }*/
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -622,24 +628,45 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 if (!sat_terra.isEmpty()) {
                     if (sat_terra.get(0).isVisible()) {
                         hideMarker(sat_terra);
-                    } else showMarker(sat_terra);
-                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
+                        mapsFragmentListener.onTerraShow(false);
+                    } else {
+                        showMarker(sat_terra);
+                        mapsFragmentListener.onTerraShow(true);
+                    }
+                } else {
+                    Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
+                    mapsFragmentListener.onTerraShow(false);
+                }
                 break;
             }
             case 1: {
                 if (!sat_aqua.isEmpty()) {
                     if (sat_aqua.get(0).isVisible()) {
                         hideMarker(sat_aqua);
-                    } else showMarker(sat_aqua);
-                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
+                        mapsFragmentListener.onAquaShow(false);
+                    } else {
+                        showMarker(sat_aqua);
+                        mapsFragmentListener.onAquaShow(true);
+                    }
+                } else {
+                    Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
+                    mapsFragmentListener.onAquaShow(false);
+                }
                 break;
             }
             case 2: {
                 if (!sat_sumi.isEmpty()) {
                     if (sat_sumi.get(0).isVisible()) {
                         hideMarker(sat_sumi);
-                    } else showMarker(sat_sumi);
-                } else Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
+                        mapsFragmentListener.onSuomiShow(false);
+                    } else {
+                        showMarker(sat_sumi);
+                        mapsFragmentListener.onSuomiShow(true);
+                    }
+                } else {
+                    Toast.makeText(context, "ไม่พบข้อมูล", Toast.LENGTH_SHORT).show();
+                    mapsFragmentListener.onSuomiShow(false);
+                }
                 break;
             }
         }
@@ -893,6 +920,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 layer.addLayerToMap();
                 isLayeronMap = true;
             }
+            Toast.makeText(activity,"Loading...",Toast.LENGTH_SHORT).show();
         } catch (XmlPullParserException | IOException e) {
             e.printStackTrace();
         }
@@ -950,6 +978,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 showInternetAlertDialog();
             }
         }
+    }
+
+    interface MapsFragmentListener{
+        void onTerraShow(boolean b);
+        void onAquaShow(boolean b);
+        void onSuomiShow(boolean b);
     }
 
     public String baseURL = "http://tatam.esy.es/";

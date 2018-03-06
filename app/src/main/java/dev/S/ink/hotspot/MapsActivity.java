@@ -1,7 +1,5 @@
 package dev.S.ink.hotspot;
 
-import android.app.FragmentManager;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
@@ -11,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -19,6 +18,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableString;
+import android.text.style.TextAppearanceSpan;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,7 +30,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class MapsActivity extends AppCompatActivity implements View.OnClickListener{
+public class MapsActivity extends AppCompatActivity implements View.OnClickListener, MapsFragment.MapsFragmentListener{
 
     public DrawerLayout mDrawer;
     public Toolbar toolbar;
@@ -76,8 +77,9 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         //start map
         mapsFragment = MapsFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.map, mapsFragment)
-                            .commit();
+        fragmentTransaction.add(R.id.map, mapsFragment)
+                .addToBackStack(null)
+                .commit();
 
         //handler = new Handler();
         //handler.postDelayed(runnable, 60000);
@@ -153,7 +155,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 if (!(current_fragment instanceof MapsFragment)) {
                     unCheckItems();
                     int count = getSupportFragmentManager().getBackStackEntryCount();
-                    for(int i = 0; i < count; ++i) {
+                    for(int i = 1; i < count; i++) {
                         getSupportFragmentManager().popBackStack();
                     }
                     current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
@@ -400,20 +402,65 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //highlight satellite
+    @Override
+    public void onAquaShow(boolean b) {
+        if(b){
+            MenuItem menuItem = nvDrawer.getMenu().findItem(R.id.aqua);
+            SpannableString s = new SpannableString(menuItem.getTitle());
+            s.setSpan(new TextAppearanceSpan(this,R.style.aquaItemshow), 0, s.length(), 0);
+            menuItem.setTitle(s);
+        }else{
+            MenuItem menuItem = nvDrawer.getMenu().findItem(R.id.aqua);
+            SpannableString s = new SpannableString(menuItem.getTitle());
+            s.setSpan(new TextAppearanceSpan(this,R.style.aquaItemnotshow), 0, s.length(), 0);
+            menuItem.setTitle(s);
+        }
+    }
+    @Override
+    public void onTerraShow(boolean b) {
+        if(b){
+            MenuItem menuItem = nvDrawer.getMenu().findItem(R.id.terra);
+            SpannableString s = new SpannableString(menuItem.getTitle());
+            s.setSpan(new TextAppearanceSpan(this,R.style.terraItemshow), 0, s.length(), 0);
+            menuItem.setTitle(s);
+        }else{
+            MenuItem menuItem = nvDrawer.getMenu().findItem(R.id.terra);
+            SpannableString s = new SpannableString(menuItem.getTitle());
+            s.setSpan(new TextAppearanceSpan(this,R.style.terraItemnotshow), 0, s.length(), 0);
+            menuItem.setTitle(s);
+        }
+    }
+    @Override
+    public void onSuomiShow(boolean b) {
+        if(b){
+            MenuItem menuItem = nvDrawer.getMenu().findItem(R.id.sumi);
+            SpannableString s = new SpannableString(menuItem.getTitle());
+            s.setSpan(new TextAppearanceSpan(this,R.style.suomiItemshow), 0, s.length(), 0);
+            menuItem.setTitle(s);
+        }else{
+            MenuItem menuItem = nvDrawer.getMenu().findItem(R.id.sumi);
+            SpannableString s = new SpannableString(menuItem.getTitle());
+            s.setSpan(new TextAppearanceSpan(this,R.style.suomiItemnotshow), 0, s.length(), 0);
+            menuItem.setTitle(s);
+        }
+    }
+
+
     @Override
     public void onClick(View view) {
     }
 
     @Override
     public void onBackPressed() {
-        if(getSupportFragmentManager().getBackStackEntryCount()==1){
+        FragmentManager fm = getSupportFragmentManager();
+        if(fm.getBackStackEntryCount()==1){
             current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
             FragmentTransaction frt = getSupportFragmentManager().beginTransaction();
             frt.detach(current_fragment);
             frt.attach(current_fragment);
             frt.commit();
-        }
-        if(getSupportFragmentManager().getBackStackEntryCount()==0){
+        }else if(fm.getBackStackEntryCount()==0){
             ShowDialogExit();
         }else {
             unCheckItems();

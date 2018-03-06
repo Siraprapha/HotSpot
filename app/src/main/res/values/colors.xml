@@ -25,4 +25,23 @@
         <item name="android:windowTranslucentStatus">true</item>
     </style>
 
+    <style name="terraItemshow">
+        <item name="android:textColor">#0063FF</item>
+    </style>
+    <style name="terraItemnotshow">
+        <item name="android:textColor">#000</item>
+    </style>
+    <style name="aquaItemshow">
+        <item name="android:textColor">#F3705A</item>
+    </style>
+    <style name="aquaItemnotshow">
+        <item name="android:textColor">#000</item>
+    </style>
+    <style name="suomiItemshow">
+        <item name="android:textColor">#65FF00</item>
+    </style>
+    <style name="suomiItemnotshow">
+        <item name="android:textColor">#000</item>
+    </style>
+
 </resources>
