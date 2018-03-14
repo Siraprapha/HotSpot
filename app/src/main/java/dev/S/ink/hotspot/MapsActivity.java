@@ -77,8 +77,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         //start map
         mapsFragment = MapsFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.map, mapsFragment)
-                .addToBackStack(null)
+        fragmentTransaction.replace(R.id.map, mapsFragment)
                 .commit();
 
         //handler = new Handler();
@@ -402,7 +401,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    //highlight satellite
+    //MapsFragmentListener
     @Override
     public void onAquaShow(boolean b) {
         if(b){
@@ -445,7 +444,16 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
             menuItem.setTitle(s);
         }
     }
-
+    @Override
+    public void onRefreshMap() {
+        current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+        if(current_fragment instanceof MapsFragment){
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.detach(current_fragment);
+            ft.attach(current_fragment);
+            ft.commit();
+        }
+    }
 
     @Override
     public void onClick(View view) {

@@ -360,6 +360,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 ActivityCompat.requestPermissions(activity,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_LOCATION );
+                mapsFragmentListener.onRefreshMap();
 
             }
         }
@@ -422,6 +423,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     if (ActivityCompat.checkSelfPermission(context,
                             Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
+                        //mapsFragmentListener.onRefreshMap();
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                         mMap.setMyLocationEnabled(true);
 //                        mFusedLocationClient.getLastLocation()
@@ -984,6 +986,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         void onTerraShow(boolean b);
         void onAquaShow(boolean b);
         void onSuomiShow(boolean b);
+        void onRefreshMap();
     }
 
     public String baseURL = "http://tatam.esy.es/";
