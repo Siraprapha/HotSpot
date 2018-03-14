@@ -43,7 +43,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDxGhs4Vc29365hZgI0RaGdfkWLY28Y66M" />
+            android:value="" />
 
         <activity
             android:name="dev.S.ink.hotspot.MapsActivity"
