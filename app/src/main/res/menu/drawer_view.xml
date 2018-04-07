@@ -78,6 +78,12 @@
         android:checkable="true" />
 
     <item
+        android:id="@+id/history"
+        android:title="@string/history"
+        android:icon="@drawable/history"
+        android:checkable="true" />
+
+    <item
         android:id="@+id/about"
         android:title="@string/about"
         android:icon="@drawable/information_outline"

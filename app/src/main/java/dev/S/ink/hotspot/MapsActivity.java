@@ -154,7 +154,7 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 if (!(current_fragment instanceof MapsFragment)) {
                     unCheckItems();
                     int count = getSupportFragmentManager().getBackStackEntryCount();
-                    for(int i = 1; i < count; i++) {
+                    for(int i = 0; i < count; i++) {
                         getSupportFragmentManager().popBackStack();
                     }
                     current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
@@ -224,6 +224,17 @@ public class MapsActivity extends AppCompatActivity implements View.OnClickListe
                 current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
                 if (!(current_fragment instanceof UserCall)) {
                     fragment = UserCall.newInstance();
+                    FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.map, fragment)
+                            .addToBackStack(null)
+                            .commit();
+                }
+                break;
+            case R.id.history:
+                kml_color_level.setVisibility(View.GONE);//remove color index
+                current_fragment = getSupportFragmentManager().findFragmentById(R.id.map);
+                if (!(current_fragment instanceof FireStatFragment)) {
+                    fragment = FireStatFragment.newInstance();
                     FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                     fragmentTransaction.replace(R.id.map, fragment)
                             .addToBackStack(null)
